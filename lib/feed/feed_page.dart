@@ -1,131 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
 
 class FeedPage extends StatefulWidget {
   @override
-  // ignore: library_private_types_in_public_api
   _FeedPageState createState() => _FeedPageState();
 }
 
 class _FeedPageState extends State<FeedPage> {
-  final List<Map<String, dynamic>> _models = [
-    {
-      'name': 'Alice',
-      'age': '40',
-      'city': 'Porto Alegre',
-      'phone': '+555199999999',
-      'photos': [
-        'https://picsum.photos/650/300',
-        'https://picsum.photos/650/350',
-      ],
-      'profile': {
-        'Idade': '40 anos',
-        'Altura': '1.60cm',
-        'Peso': '65kg',
-        'Pés': '36',
-        'Cabelo': 'Loiro',
-        'Olhos': 'Castanhos',
-        'Cintura': '69cm',
-        'Quadril': '115cm',
-      },
-      'jobs': {
-        'Oral': 'Sim',
-        'Beija': 'Sim',
-        'Anal': 'Talvez',
-        'Amigas': 'Sim',
-        'Viagem': 'Talvez',
-        'Dominação': 'Sim',
-        'Inversão': 'Sim',
-        'Atende': 'Eles, Casais',
-        'Podolatria': 'Sim',
-      },
-      'service': {
-        'Pagamento': 'Dinheiro, Cartão de Crédito, Cartão de débito, Pix',
-        'Locais': 'Hotéis, Motéis, Residências, Atendimento Virtual',
-        'Cidade': 'RS, Canoas, Novo Hamburgo, Porto Alegre, São Leopoldo',
-      },
-    },
-    {
-      'name': 'Alice',
-      'age': '40',
-      'city': 'Porto Alegre',
-      'phone': '+555199999999',
-      'photos': [
-        'https://picsum.photos/600/300',
-        'https://picsum.photos/600/350',
-      ],
-      'profile': {
-        'Idade': '40 anos',
-        'Altura': '1.60cm',
-        'Peso': '65kg',
-        'Pés': '36',
-        'Cabelo': 'Loiro',
-        'Olhos': 'Castanhos',
-        'Cintura': '69cm',
-        'Quadril': '115cm',
-      },
-      'jobs': {
-        'Oral': 'Sim',
-        'Beija': 'Sim',
-        'Anal': 'Talvez',
-        'Amigas': 'Sim',
-        'Viagem': 'Talvez',
-        'Dominação': 'Sim',
-        'Inversão': 'Sim',
-        'Atende': 'Eles, Casais',
-        'Podolatria': 'Sim',
-      },
-      'service': {
-        'Pagamento': 'Dinheiro, Cartão de Crédito, Cartão de débito, Pix',
-        'Locais': 'Hotéis, Motéis, Residências, Atendimento Virtual',
-        'Cidade': 'RS, Canoas, Novo Hamburgo, Porto Alegre, São Leopoldo',
-      },
-    },
-    {
-      'name': 'Alice',
-      'age': '40',
-      'city': 'Porto Alegre',
-      'phone': '+555199999999',
-      'photos': [
-        'https://picsum.photos/500/300',
-        'https://picsum.photos/500/350',
-      ],
-      'profile': {
-        'Idade': '40 anos',
-        'Altura': '1.60cm',
-        'Peso': '65kg',
-        'Pés': '36',
-        'Cabelo': 'Loiro',
-        'Olhos': 'Castanhos',
-        'Cintura': '69cm',
-        'Quadril': '115cm',
-      },
-      'jobs': {
-        'Oral': 'Sim',
-        'Beija': 'Sim',
-        'Anal': 'Talvez',
-        'Amigas': 'Sim',
-        'Viagem': 'Talvez',
-        'Dominação': 'Sim',
-        'Inversão': 'Sim',
-        'Atende': 'Eles, Casais',
-        'Podolatria': 'Sim',
-      },
-      'service': {
-        'Pagamento': 'Dinheiro, Cartão de Crédito, Cartão de débito, Pix',
-        'Locais': 'Hotéis, Motéis, Residências, Atendimento Virtual',
-        'Cidade': 'RS, Canoas, Novo Hamburgo, Porto Alegre, São Leopoldo',
-      },
-    }
-  ];
-
+  final ApiService apiService = ApiService();
+  List<dynamic> _models = [];
+  int currentPage = 1;
+  bool isLoading = false;
+  bool hasMore = true;
   List<bool> _liked = [];
 
   @override
   void initState() {
     super.initState();
-    _liked = List<bool>.filled(_models.length, false);
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+    if (isLoading || !hasMore) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final data = await apiService.fetchGirls(currentPage);
+      final List<dynamic> newModels = data['data'];
+
+      setState(() {
+        _models.addAll(newModels);
+        _liked.addAll(List<bool>.filled(newModels.length, false)); // Atualiza os likes
+        currentPage++;
+        hasMore = data['meta']['current_page'] < data['meta']['last_page'];
+      });
+    } catch (error) {
+      print('Erro ao buscar as modelos: $error');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   String _generateWhatsAppUrl(String phoneNumber) {
@@ -141,226 +61,211 @@ class _FeedPageState extends State<FeedPage> {
       throw 'Não foi possível abrir o WhatsApp';
     }
   }
+
   int _currentImageIndex = 0;
 
-  void _showDetailsModal(Map<String, dynamic> model) {
-  showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return Container(
-        padding: EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Perfil:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+  // Função auxiliar para construir chips
+  Widget _buildChip(String label, String value) {
+    return Chip(
+      label: Text(
+        '$label: $value',
+        style: const TextStyle(
+          fontSize: 12, // Texto menor
+          color: Colors.white, // Texto branco
+        ),
+      ),
+      backgroundColor: Colors.black.withOpacity(0.7), // Preto com opacidade no fundo
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8), // Remove bordas extras
+        side: BorderSide.none, // Sem borda
+      ),
+    );
+  }
+
+  void _showDetailsModal(dynamic model) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Perfil:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Wrap(
+                spacing: 8.0, // Espaçamento horizontal entre as pílulas
+                runSpacing: 4.0, // Espaçamento vertical entre as linhas
+                children: [
+                  _buildChip('Idade', '${model['age']} anos'),
+                  _buildChip('Altura', '${model['height']} cm'),
+                  _buildChip('Peso', '${model['weight']} kg'),
+                  _buildChip('Cabelo', model['hair']),
+                  _buildChip('Olhos', model['eyes']),
+                  _buildChip('Cintura', '${model['waist']} cm'),
+                  _buildChip('Quadril', '${model['hip']} cm'),
+                  _buildChip('Pés', '${model['feet']}'),
+                ],
+              ),
+              SizedBox(height: 16),
+              // Seção "O que eu faço"
+              Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Wrap(
                 spacing: 8.0, // Espaçamento horizontal entre as pílulas
                 runSpacing: 4.0, // Espaçamento vertical entre as linhas
-                children: model['profile'].entries.map<Widget>((entry) {
-                  return Chip(
-                    label: Text(
-                      '${entry.key}: ${entry.value}',
-                      style: const TextStyle(
-                        fontSize: 12, // Texto menor
-                        color: Colors.white, // Texto branco
-                      ),
-                    ),
-                    backgroundColor: Colors.black.withOpacity(0.7), // Preto com opacidade no fundo
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Remove bordas extras
-                      side: BorderSide.none, // Sem borda
-                    ),
-                  );
+                children: model['services'].map<Widget>((service) {
+                  final serviceKey = service.keys.first; // A chave do serviço (ex: 'Oral')
+                  final serviceValue = service.values.first; // O valor do serviço (ex: 'Sim')
+                  return _buildChip(serviceKey, serviceValue);
                 }).toList(),
               ),
-              SizedBox(height: 16),
-              Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: model['jobs'].entries.map<Widget>((entry) {
-                  return Chip(
-                    label: Text(
-                      '${entry.key}: ${entry.value}',
-                      style: const TextStyle(
-                        fontSize: 12, // Texto menor
-                        color: Colors.white, // Texto branco
-                      ),
-                    ),
-                    backgroundColor: Colors.black.withOpacity(0.7), // Preto com opacidade no fundo
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Remove bordas extras
-                      side: BorderSide.none, // Sem borda
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              const Text('Atendimento:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: model['service'].entries.map<Widget>((entry) {
-                  return Chip(
-                    label: Text(
-                      '${entry.key}: ${entry.value}',
-                      style: const TextStyle(
-                        fontSize: 12, // Texto menor
-                        color: Colors.white, // Texto branco
-                      ),
-                    ),
-                    backgroundColor: Colors.black.withOpacity(0.7), // Preto com opacidade no fundo
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Remove bordas extras
-                      side: BorderSide.none, // Sem borda
-                    ),
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 16),
-              ElevatedButton.icon(
-                icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
-                label: Text('Vamos Agendar?'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
+                const SizedBox(height: 16),
+                // Seção "Atendimento"
+                const Text('Atendimento:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: [
+                    // Chip de Pagamento
+                    _buildChip('Pagamento', model['payments']
+                        .map((paymentList) => paymentList.first)
+                        .join(', ')),
+
+                    // Chip de Locais
+                    _buildChip('Locais', model['locals']
+                        .map((localList) => localList.first)
+                        .join(', ')),
+
+                    // Chip de Cidades
+                    _buildChip('Cidade', model['cities']
+                        .map((cityList) => cityList.first)
+                        .join(', ')),
+                  ],
                 ),
-                onPressed: () {
-                  _openWhatsApp(model['phone']);
-                },
-              ),
-            ],
+                SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
+                  label: Text('Vamos Agendar?'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                  onPressed: () {
+                    _openWhatsApp(model['telephone']); // Abre o WhatsApp
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
-      scrollDirection: Axis.vertical,
-      itemCount: _models.length,
-      onPageChanged: (int newIndex) {
-        // Reseta o contador de imagens ao mudar de modelo
-        setState(() {
-          _currentImageIndex = 0;  // Reinicia o contador de imagens
-        });
-      },
-      itemBuilder: (context, index) {
-        final model = _models[index];
-        PageController _photoController = PageController();
-        return Stack(
-          children: [
-            // PageView para exibir as imagens
-            PageView.builder(
-              controller: _photoController,
-              itemCount: model['photos'].length,
-              onPageChanged: (int pageIndex) {
-                setState(() {
-                  _currentImageIndex = pageIndex;
-                });
-              },
-              itemBuilder: (context, photoIndex) {
-                return Stack(
-                  children: [
-                    Center(
-                      child: CircularProgressIndicator(), // Exibe o loader no centro enquanto a imagem carrega
-                    ),
-                    Image.network(
-                      model['photos'][photoIndex],
-                      fit: BoxFit.cover,
-                      height: double.infinity,
-                      width: double.infinity,
-                      loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                        if (loadingProgress == null) {
-                          return child; // Se a imagem for carregada, exibe a imagem
-                        } else {
-                          // Exibe o loader enquanto a imagem está sendo carregada
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null, // Exibe o progresso se disponível
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-            // Contador de imagens no canto superior direito
-            Positioned(
-              top: 50,
-              right: 20,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5), // Fundo preto com opacidade
-                  borderRadius: BorderRadius.circular(12), // Borda arredondada
-                ),
-                child: Text(
-                  '${_currentImageIndex + 1}/${model['photos'].length}', // Atualiza dinamicamente o contador
-                  style: TextStyle(
-                    color: Colors.white, // Texto branco
-                    fontSize: 12, // Tamanho menor do texto
-                  ),
-                ),
-              ),
-            ),
-            // Detalhes da modelo e botões
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      body: PageView.builder(
+        scrollDirection: Axis.vertical, // Troca para scroll vertical
+        itemCount: _models.length + (hasMore ? 1 : 0), // Adiciona 1 para o loader
+        onPageChanged: (index) {
+          if (index == _models.length - 1 && hasMore) {
+            fetchData(); // Carrega mais dados quando chega ao final da lista
+          }
+
+          setState(() {
+            _currentImageIndex = 0;  // Reinicia o contador de imagens
+          });
+        },
+        itemBuilder: (context, index) {
+          if (index == _models.length) {
+            return _buildLoader();
+          }
+
+          final model = _models[index];
+          return _buildModelCard(model, index);
+        },
+      ),
+    );
+  }
+
+  Widget _buildModelCard(dynamic model, int index) {
+  PageController _photoController = PageController();
+
+  // Pré-carregar todas as imagens da modelo
+  for (var media in model['medias']) {
+    precacheImage(NetworkImage(media['url']), context);
+  }
+
+  return Container(
+    height: MediaQuery.of(context).size.height, // Define a altura como a altura da tela
+    // Resetar o índice atual das imagens ao mudar de modelo
+    child: Stack(
+      children: [
+        // PageView para exibir as imagens
+        Positioned.fill(
+          child: PageView.builder(
+            controller: _photoController,
+            itemCount: model['medias'].length,
+            onPageChanged: (int pageIndex) {
+              setState(() {
+                _currentImageIndex = pageIndex;
+              });
+            },
+            itemBuilder: (context, photoIndex) {
+              return Stack(
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${model['name']}, ${model['age']} anos',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(2.0, 2.0),
-                              blurRadius: 4.0,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ],
+                  Center(child: CircularProgressIndicator()), // Loader enquanto carrega a imagem
+                  Image.network(
+                    model['medias'][photoIndex]['url'],
+                    fit: BoxFit.cover,
+                    height: double.infinity, // Garante que a imagem cubra toda a área disponível
+                    width: double.infinity,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      // Botão de Detalhes ao lado da idade, menor
-                      ElevatedButton(
-                        onPressed: () {
-                          _showDetailsModal(model);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.7),
-                          foregroundColor: Colors.black,
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: Text('Detalhes', style: TextStyle(fontSize: 12)),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                  SizedBox(height: 5),
+                ],
+              );
+            },
+          ),
+        ),
+        // Contador de imagens no canto superior direito
+        Positioned(
+          top: 50,
+          right: 20,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5), // Fundo preto com opacidade
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${_currentImageIndex + 1}/${model['medias'].length}', // Contador de imagens
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ),
+        // Detalhes da modelo e botões
+        Positioned(
+          bottom: 20,
+          left: 20,
+          right: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
                   Text(
-                    model['city'],
+                    '${model['name']}, ${model['age']} anos',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
+                      fontSize: 24,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                       shadows: [
                         Shadow(
                           offset: Offset(2.0, 2.0),
@@ -370,59 +275,101 @@ class _FeedPageState extends State<FeedPage> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 10),
-                  // Pílula com os botões de Like, WhatsApp e divisor
-                  Center(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 13, vertical: 5), // Ajustado conforme sua alteração
-                      decoration: BoxDecoration(
-                        color: Colors.white, // Fundo branco
-                        borderRadius: BorderRadius.circular(30), // Borda arredondada
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Botão de Like
-                          IconButton(
-                            icon: Icon(
-                              _liked[index] ? Icons.favorite : Icons.favorite_border,
-                              color: _liked[index] ? Colors.red : Colors.black,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _liked[index] = !_liked[index];
-                              });
-                            },
-                          ),
-                          // Divisor vertical entre os botões (usando Container)
-                          Container(
-                            height: 28,  // Alinhado à altura dos ícones
-                            width: 1,  // Espessura do divisor
-                            color: const Color.fromARGB(255, 60, 60, 60),  // Cor do divisor
-                            margin: EdgeInsets.symmetric(horizontal: 15),  // Espaçamento
-                          ),
-                          // Botão de WhatsApp
-                          IconButton(
-                            icon: FaIcon(
-                              FontAwesomeIcons.whatsapp,
-                              color: Colors.green,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              _openWhatsApp(model['phone']);
-                            },
-                          ),
-                        ],
+                  SizedBox(width: 10),
+                  // Botão de Detalhes ao lado da idade
+                  ElevatedButton(
+                    onPressed: () {
+                      _showDetailsModal(model); // Abre o modal de detalhes
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.7),
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
+                    child: Text('Detalhes', style: TextStyle(fontSize: 12)),
                   ),
                 ],
               ),
-            ),
-          ],
-        );
-      },
-    );
+              SizedBox(height: 5),
+              Text(
+                model['cities']
+                  .map((cityList) => cityList.first) // Pega o primeiro item de cada sublista
+                  .join(', '), // Junta os elementos com vírgulas // Achata a lista corretamente
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white70,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(2.0, 2.0),
+                      blurRadius: 4.0,
+                      color: Colors.black.withOpacity(0.5),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              // Pílula com os botões de Like, WhatsApp e divisor
+              Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 13, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Fundo branco
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Botão de Like
+                      IconButton(
+                        icon: Icon(
+                          _liked[index] ? Icons.favorite : Icons.favorite_border,
+                          color: _liked[index] ? Colors.red : Colors.black,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _liked[index] = !_liked[index];
+                          });
+                        },
+                      ),
+                      // Divisor vertical entre os botões
+                      Container(
+                        height: 28,  // Alinhado à altura dos ícones
+                        width: 1,  // Espessura do divisor
+                        color: const Color.fromARGB(255, 60, 60, 60),  // Cor do divisor
+                        margin: EdgeInsets.symmetric(horizontal: 15),  // Espaçamento
+                      ),
+                      // Botão de WhatsApp
+                      IconButton(
+                        icon: FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          color: Colors.green,
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          _openWhatsApp(model['telephone']); // Abre o WhatsApp
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+  Widget _buildLoader() {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator());
+    } else {
+      return SizedBox.shrink();
+    }
   }
 }
