@@ -2,11 +2,9 @@ import 'package:do_job_app/likes/likes_page.dart';
 import 'package:do_job_app/login/login_page.dart';
 import 'package:flutter/material.dart';
 import 'feed/feed_page.dart';
-import 'login/login_page.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'login/login_service.dart'; // Adicionei o LoginService para verificar o login
 
-void main() async{
-  //await dotenv.load();
+void main() async {
   runApp(const MyApp());
 }
 
@@ -21,11 +19,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 202, 128, 54)),
         useMaterial3: true,
       ),
-      initialRoute: '/feed', // Define a rota inicial
+      initialRoute: '/feed',
       routes: {
-        '/feed': (context) => const HomeScreen(selectedIndex: 0), // Rota para o feed
-        '/likes': (context) => const HomeScreen(selectedIndex: 1), // Rota para a página de likes
-        '/login': (context) => const HomeScreen(selectedIndex: 2), // Rota para a página de login
+        '/feed': (context) => const HomeScreen(selectedIndex: 0),
+        '/likes': (context) => const HomeScreen(selectedIndex: 1),
+        '/login': (context) => const HomeScreen(selectedIndex: 2),
       },
       onUnknownRoute: (settings) {
         return MaterialPageRoute(builder: (context) => UnknownPage());
@@ -40,12 +38,13 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.selectedIndex});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
+  final LoginService loginService = LoginService(); // Instância de LoginService
+  bool isLoggedIn = false;
 
   static final List<Widget> _widgetOptions = <Widget>[
     FeedPage(),
@@ -56,7 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.selectedIndex; // Inicia com a página definida pela rota
+    _selectedIndex = widget.selectedIndex;
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    bool loggedIn = await loginService.isLogged();
+    setState(() {
+      isLoggedIn = loggedIn;
+    });
   }
 
   void _onItemTapped(int index) {
@@ -100,14 +107,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/likes');
               },
             ),
-            ListTile(
-              leading: Icon(Icons.login),
-              title: Text('Login'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/login');
-              },
-            ),
+            if (!isLoggedIn) // Exibe o botão de Login apenas se o usuário NÃO estiver logado
+              ListTile(
+                leading: Icon(Icons.login),
+                title: Text('Login'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
           ],
         ),
       ),
@@ -122,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return FloatingActionButton(
                   backgroundColor: Colors.white,
                   onPressed: () {
-                    Scaffold.of(context).openDrawer(); // Abre o Drawer com o contexto correto
+                    Scaffold.of(context).openDrawer();
                   },
                   child: Icon(Icons.menu),
                 );
@@ -135,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Exemplo de uma página desconhecida
+// Página de erro desconhecido
 class UnknownPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

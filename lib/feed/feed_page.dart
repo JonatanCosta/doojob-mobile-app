@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
+import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de likes
 
 class FeedPage extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _FeedPageState extends State<FeedPage> {
   bool isLoading = false;
   bool hasMore = true;
   List<bool> _liked = [];
+  bool isLoggedIn = false; // Simulação de estado de login. Altere conforme sua lógica de autenticação.
 
   @override
   void initState() {
@@ -325,13 +327,16 @@ class _FeedPageState extends State<FeedPage> {
                       // Botão de Like
                       IconButton(
                         icon: Icon(
-                          _liked[index] ? Icons.favorite : Icons.favorite_border,
-                          color: _liked[index] ? Colors.red : Colors.black,
+                          model['is_liked'] ? Icons.favorite : Icons.favorite_border,
+                          color: model['is_liked'] ? Colors.red : Colors.black,
                           size: 30,
                         ),
                         onPressed: () {
-                          setState(() {
-                            _liked[index] = !_liked[index];
+                          LikeService(context, isLoggedIn: isLoggedIn).onLikePressed(index, model['is_liked'], model['id'], (isLiked) {
+                            setState(() {
+                              model['is_liked'] = isLiked;  // Chama setState para atualizar a UI
+                            });
+                            print("Model is liked: ${model['is_liked']}");
                           });
                         },
                       ),
