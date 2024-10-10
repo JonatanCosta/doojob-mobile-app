@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:do_job_app/login/login_service.dart';
+import 'package:do_job_app/login/register_service.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 
@@ -65,27 +66,31 @@ class _RegisterPage extends State<RegisterPage> {
     }
   }
 
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+
   bool _isLoading = false; // Indicador de loading
   bool _popupShown = false;
 
   // Instância do LoginService
   final LoginService loginService = LoginService();
+  final RegisterService registerService = RegisterService();
 
-  Future<void> _handleLogin() async {
-    final email = _phoneController.text;
+  Future<void> _handleRegister() async {
+    final name = _nameController.text;
+    final telephone = phoneMaskFormatter.getUnmaskedText();
     final password = _passwordController.text;
-    final confirm_password = _confirmPasswordController.text;
+    //final confirm_password = _confirmPasswordController.text;
 
     setState(() {
       _isLoading = true;
     });
 
     // Utiliza o serviço de login para autenticar o usuário
-    final success = await loginService.login(email, password);
+    final success = await registerService.register(name, telephone, password);
 
     setState(() {
       _isLoading = false;
@@ -96,9 +101,10 @@ class _RegisterPage extends State<RegisterPage> {
       Navigator.pushReplacementNamed(context, '/feed');
     } else {
       // Exibe uma mensagem de erro em caso de falha no login
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Falha no login. Verifique suas credenciais.')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Falha no login. Verifique suas credenciais.')),
+      // );
+      _showTopErrorMessage(context, 'Falha no cadastro verifique seus dados.');
     }
   }
 
@@ -143,6 +149,16 @@ class _RegisterPage extends State<RegisterPage> {
               textAlign: TextAlign.center, // Centraliza o texto
             ),
             const SizedBox(height: 25),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Nome ou Apelido',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             // Campo de Email com bordas arredondadas
             TextField(
               controller: _phoneController,
@@ -188,7 +204,7 @@ class _RegisterPage extends State<RegisterPage> {
                 : SizedBox(
                     width: double.infinity, // Ocupa 100% da largura
                     child: ElevatedButton(
-                      onPressed: _handleLogin,
+                      onPressed: _handleRegister,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF5252),
                         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -241,5 +257,41 @@ class _RegisterPage extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  void _showTopErrorMessage(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 60.0, // Posição no topo
+        left: 20.0,
+        right: 20.0,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Insere o overlay na tela
+    overlay?.insert(overlayEntry);
+
+    // Remove o overlay após 3 segundos
+    Future.delayed(const Duration(seconds: 4), () {
+      overlayEntry.remove();
+    });
   }
 }

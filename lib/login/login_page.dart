@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:do_job_app/login/login_service.dart'; // Importe o serviço de login
 import 'package:animated_text_kit/animated_text_kit.dart'; // Importe a biblioteca de animação
-
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false; // Indicador de loading
 
@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
   final LoginService loginService = LoginService();
 
   Future<void> _handleLogin() async {
-    final email = _emailController.text;
+    final phone = phoneMaskFormatter.getUnmaskedText();
     final password = _passwordController.text;
 
     setState(() {
@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     // Utiliza o serviço de login para autenticar o usuário
-    final success = await loginService.login(email, password);
+    final success = await loginService.login(phone, password);
 
     setState(() {
       _isLoading = false;
@@ -58,6 +58,12 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
   }
+
+  // Defina a máscara de telefone brasileiro
+  var phoneMaskFormatter = MaskTextInputFormatter(
+    mask: '(##) # ####-####', 
+    filter: { "#": RegExp(r'[0-9]') },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -110,9 +116,11 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 25),
             // Campo de Email com bordas arredondadas
             TextField(
-              controller: _emailController,
+              controller: _phoneController,
+              keyboardType: TextInputType.phone, // Define o teclado numérico
+              inputFormatters: [phoneMaskFormatter], // Aplica a máscara
               decoration: InputDecoration(
-                labelText: 'Email',
+                labelText: 'Número de Telefone Celular',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),

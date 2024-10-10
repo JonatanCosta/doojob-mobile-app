@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-class LoginService {
+class RegisterService {
   // Definição do baseUrl dentro da classe com suporte a variáveis de ambiente
   static String baseUrl = const String.fromEnvironment('API_URL', defaultValue: 'http://divinas.local:8000');
 
@@ -10,8 +10,8 @@ class LoginService {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   // Método para logar
-  Future<bool> login(String phone, String password) async {
-    final url = Uri.parse('$baseUrl/v1/login'); // Ajuste para a rota correta de login da API
+  Future<bool> register(String name, String telephone, String password) async {
+    final url = Uri.parse('$baseUrl/v1/users'); // Ajuste para a rota correta de login da API
 
     final response = await http.post(
       url,
@@ -20,8 +20,9 @@ class LoginService {
         'Accept': 'application/json',
       },
       body: jsonEncode({
-        'telephone': phone,
+        'name': name,
         'password': password,
+        'telephone': telephone,
       }),
     );
 
@@ -38,26 +39,6 @@ class LoginService {
     } else {
       return false; // Falha no login
     }
-  }
-
-  // Método para cadastrar
-  Future<bool> register(String name, String email, String password) async {
-    final url = Uri.parse('$baseUrl/v1/users'); // Ajuste para a rota correta de registro da API
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'name': name,
-        'email': email,
-        'password': password,
-        'password_confirmation': password, // Pode incluir isso se a API pedir confirmação de senha
-      }),
-    );
-
-    return response.statusCode == 201; // Sucesso no registro
   }
 
   // Método para recuperar o token armazenado
