@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
 import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de likes
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedPage extends StatefulWidget {
   @override
@@ -21,7 +22,80 @@ class _FeedPageState extends State<FeedPage> {
   @override
   void initState() {
     super.initState();
+    _checkAgeConfirmation();
     fetchData();
+  }
+
+  // Verifica se o usuário já aceitou o aviso de conteúdo adulto
+  Future<void> _checkAgeConfirmation() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? isAdult = prefs.getBool('isAdult');
+
+    print("isAdult: $isAdult");
+
+    // Se o usuário ainda não confirmou, exibe o popup
+    if (isAdult == null || !isAdult) {
+      _showAgeConfirmationPopup();
+    }
+  }
+
+  // Função que exibe o popup para confirmar a idade
+  void _showAgeConfirmationPopup() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impede que o popup seja fechado sem ação
+      barrierColor: Colors.black.withOpacity(0.9), // Define o fundo com opacidade
+      builder: (BuildContext context) {
+        return AlertDialog(
+          
+          title: const Text('Aviso: Conteúdo Adulto 18+'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min, // Garante que a coluna ocupe apenas o espaço necessário
+            crossAxisAlignment: CrossAxisAlignment.start, // Alinha os textos à esquerda
+            children: [
+              Text(
+                'Entendo que o site DooJob apresenta conteúdo explícito destinado a adultos.',
+                style: TextStyle(
+                  fontSize: 18, // Tamanho maior para o primeiro texto
+                  fontWeight: FontWeight.bold, // Negrito para destacar
+                ),
+              ),
+              SizedBox(height: 15), // Espaçamento entre os dois textos
+              Text(
+                'A profissão de acompanhante é legalizada no Brasil e deve ser respeitada.',
+                style: TextStyle(
+                  fontSize: 14, // Tamanho menor para o segundo texto
+                  color: Colors.grey, // Cor mais clara para o segundo texto
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity, // Faz o botão ocupar 100% da largura
+              child: ElevatedButton(
+                onPressed: () async {
+                  // Salva a confirmação de idade e fecha o popup
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('isAdult', true); // Salva que o usuário é maior de idade
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Concordo'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15), // Aumenta a altura do botão
+                  backgroundColor: const Color(0xFFFF5252), // Cor de fundo (#FFFF5252)
+                  foregroundColor: Colors.white, // Texto branco
+                  textStyle: const TextStyle(fontSize: 20),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero, // Remove bordas arredondadas
+                    )
+                  ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> fetchData() async {

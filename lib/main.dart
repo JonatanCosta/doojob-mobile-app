@@ -1,5 +1,6 @@
 import 'package:do_job_app/likes/likes_page.dart';
 import 'package:do_job_app/login/login_page.dart';
+import 'package:do_job_app/login/register_page.dart';
 import 'package:flutter/material.dart';
 import 'feed/feed_page.dart';
 import 'login/login_service.dart'; // Adicionei o LoginService para verificar o login
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         '/feed': (context) => const HomeScreen(selectedIndex: 0),
         '/likes': (context) => const HomeScreen(selectedIndex: 1),
         '/login': (context) => const HomeScreen(selectedIndex: 2),
+        '/register': (context) => const HomeScreen(selectedIndex: 3),
       },
       onUnknownRoute: (settings) {
         return MaterialPageRoute(builder: (context) => UnknownPage());
@@ -49,7 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     FeedPage(),
     const LikesPage(),
-    LoginPage()
+    LoginPage(),
+    RegisterPage(),
   ];
 
   @override
@@ -79,15 +82,15 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFFFF5252), // Cor de fundo #ff5252
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+              child: Center(
+                child: Image.network(
+                  'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/logo-branca-fundo-transparente.png', // Substitui o texto pela logo
+                  fit: BoxFit.contain,
+                  height: 70, // Ajuste o tamanho da logo conforme necessário
                 ),
               ),
             ),

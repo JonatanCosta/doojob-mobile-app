@@ -46,7 +46,7 @@ class _LikesPageState extends State<LikesPage> {
         print('Erro ao buscar os likes');
       }
     } else {
-      print('Usuário não está logado');
+      Navigator.pushNamed(context, '/login');
     }
   }
 
