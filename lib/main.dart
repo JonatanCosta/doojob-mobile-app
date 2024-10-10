@@ -69,17 +69,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
     LocationService locationService = LocationService();
     locationService.getSavedCity().then((city) {
-      setState(() {
-        _userCity = city;
-        _showCity = true;
-      });
+      if (mounted) {
+        setState(() {
+          if (city != null && city.isNotEmpty) {
+            _userCity = city;
+            _showCity = true;
+          } else {
+            _showCity = false; // Não exibe o texto se a cidade não for encontrada
+          }
+        });
 
       // Exibe o texto por 3 segundos, e depois inicia o fade out suave
-      Future.delayed(Duration(seconds: 4), () {
-        setState(() {
-          _showCity = false;
+      if (_showCity) {
+        Future.delayed(Duration(seconds: 4), () {
+          if (mounted) {
+            setState(() {
+              _showCity = false;
+            });
+          }
         });
-      });
+      }
+    }
     });
   }
 
@@ -162,87 +172,87 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           if (_selectedIndex == 0) // Exibe o botão de localização apenas na rota de Feed
-        Positioned(
-          top: 40,
-          left: 85, // Ajuste a posição horizontal
-          child: Row(
-            children: [
-              FloatingActionButton(
-                backgroundColor: Colors.white,
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Sua cidade'),
-                        content: RichText(
-                          text: TextSpan(
-                            text: 'Você está em ',
-                            style: TextStyle(
-                              color: Colors.black, // Cor do texto padrão
-                              fontSize: 16, // Tamanho do texto
+          Positioned(
+            top: 40,
+            left: 85, // Ajuste a posição horizontal
+            child: Row(
+              children: [
+                FloatingActionButton(
+                  backgroundColor: Colors.white,
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Sua cidade'),
+                          content: RichText(
+                            text: TextSpan(
+                              text: 'Você está em ',
+                              style: TextStyle(
+                                color: Colors.black, // Cor do texto padrão
+                                fontSize: 16, // Tamanho do texto
+                              ),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: _userCity, // A cidade em negrito
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold, // Negrito para o texto da cidade
+                                    color: Colors.black, // Cor preta para o texto da cidade
+                                  ),
+                                ),
+                              ],
                             ),
-                            children: <TextSpan>[
-                              TextSpan(
-                                text: _userCity, // A cidade em negrito
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold, // Negrito para o texto da cidade
-                                  color: Colors.black, // Cor preta para o texto da cidade
+                          ),
+                          actions: [
+                            // Botão para alterar a cidade
+                            SizedBox(
+                              width: double.infinity, // Ocupar toda a largura da tela
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFFFF5252), // Cor de fundo (#ff5252)
+                                  foregroundColor: Colors.white, // Cor do texto (branco)
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // Fecha o popup
+                                  // Aqui você pode adicionar a lógica para alterar a cidade
+                                  LocationService locationService = LocationService();
+                                  locationService.showCitySelectionPopup(context);
+                                },
+                                child: const Text(
+                                  'Alterar Cidade',
+                                  style: TextStyle(fontSize: 20), // Ajuste o tamanho do texto conforme necessário
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          // Botão para alterar a cidade
-                          SizedBox(
-                            width: double.infinity, // Ocupar toda a largura da tela
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFFFF5252), // Cor de fundo (#ff5252)
-                                foregroundColor: Colors.white, // Cor do texto (branco)
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop(); // Fecha o popup
-                                // Aqui você pode adicionar a lógica para alterar a cidade
-                                LocationService locationService = LocationService();
-                                locationService.showCitySelectionPopup(context);
-                              },
-                              child: Text(
-                                'Alterar Cidade',
-                                style: TextStyle(fontSize: 20), // Ajuste o tamanho do texto conforme necessário
-                              ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Icon(
-                  Icons.location_on,
-                  color: _userCity != 'Cidade não definida' ? Colors.green : Colors.red,
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Icon(
+                    Icons.location_on,
+                    color: _userCity != 'Cidade não definida' ? Colors.green : Colors.red,
+                  ),
                 ),
-              ),
-              // Animação para exibir e ocultar o texto
-              AnimatedOpacity(
-                opacity: _showCity ? 1.0 : 0.0,
-                duration: Duration(milliseconds: 1000), // Tempo de fade out
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    _userCity!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                // Animação para exibir e ocultar o texto
+                AnimatedOpacity(
+                  opacity: _showCity ? 1.0 : 0.0,
+                  duration: Duration(milliseconds: 1000), // Tempo de fade out
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      _userCity!,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ],
       ),
     );
