@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
 import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de likes
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:do_job_app/geolocation/location.dart'; // Importa a classe LocationService
+
 
 class FeedPage extends StatefulWidget {
   @override
@@ -22,20 +24,28 @@ class _FeedPageState extends State<FeedPage> {
   @override
   void initState() {
     super.initState();
-    _checkAgeConfirmation();
+
+    // Solicita a permissão de localização ao entrar na página
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAgeConfirmation();
+    });
+
     fetchData();
   }
+  
 
   // Verifica se o usuário já aceitou o aviso de conteúdo adulto
   Future<void> _checkAgeConfirmation() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? isAdult = prefs.getBool('isAdult');
 
-    print("isAdult: $isAdult");
-
-    // Se o usuário ainda não confirmou, exibe o popup
-    if (isAdult == null || !isAdult) {
+    if (isAdult == null || isAdult == false) {
+      // Mostra o popup de confirmação de idade
       _showAgeConfirmationPopup();
+    } else {
+      // Se já confirmou, solicita permissão de localização
+      LocationService locationService = LocationService();
+      locationService.requestLocationPermission(context);
     }
   }
 
@@ -79,6 +89,10 @@ class _FeedPageState extends State<FeedPage> {
                   SharedPreferences prefs = await SharedPreferences.getInstance();
                   await prefs.setBool('isAdult', true); // Salva que o usuário é maior de idade
                   Navigator.of(context).pop();
+
+                   // Solicita permissão de localização após a confirmação da idade
+                  LocationService locationService = LocationService();
+                  locationService.requestLocationPermission(context);
                 },
                 child: const Text('Concordo'),
                 style: ElevatedButton.styleFrom(
