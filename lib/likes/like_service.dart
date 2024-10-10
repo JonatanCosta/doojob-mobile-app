@@ -74,13 +74,13 @@ class LikeService {
                   child: TextButton(
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.white, // Fundo branco
-                      side: BorderSide(color: Colors.blue), // Borda azul
+                      side: BorderSide(color: Color(0xFFFF5252)), // Borda azul
                       padding: EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text(
                       'Login',
                       style: TextStyle(
-                        color: Colors.blue, // Texto azul
+                        color: Color(0xFFFF5252), // Texto azul
                       ),
                     ),
                     onPressed: () {
@@ -94,7 +94,7 @@ class LikeService {
                 Expanded(
                   child: TextButton(
                     style: TextButton.styleFrom(
-                      backgroundColor: Colors.blue, // Fundo azul
+                      backgroundColor: const Color(0xFFFF5252), // Fundo azul
                       padding: EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text(

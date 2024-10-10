@@ -150,6 +150,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.pushNamed(context, '/login');
                 },
               ),
+            if (isLoggedIn)
+              ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Sair'),
+                onTap: () async {
+                  await loginService.logout();
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/feed');
+                },
+              ),
           ],
         ),
       ),
@@ -169,6 +179,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Icon(Icons.menu),
                 );
               },
+            ),
+          ),
+          if (_selectedIndex == 1)
+          Positioned(
+            top: 40,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Image.network(
+                'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/logo-branca-fundo-transparente.png',
+                height: 50,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
           if (_selectedIndex == 0) // Exibe o botão de localização apenas na rota de Feed
