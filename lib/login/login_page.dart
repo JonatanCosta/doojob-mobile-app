@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     // Utiliza o serviço de login para autenticar o usuário
-    final success = await loginService.login(phone, password);
+    final success = await loginService.login(phone, password, false);
 
     setState(() {
       _isLoading = false;

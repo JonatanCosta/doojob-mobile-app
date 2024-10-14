@@ -1,11 +1,13 @@
 import 'package:do_job_app/likes/likes_page.dart';
 import 'package:do_job_app/login/login_page.dart';
+import 'package:do_job_app/login/model/login_page_model.dart';
 import 'package:do_job_app/login/register_page.dart';
+import 'package:do_job_app/painel/model/painel_page_model.dart';
 import 'package:flutter/material.dart';
 import 'feed/feed_page.dart';
 import 'login/login_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:do_job_app/geolocation/location.dart';
+import 'login/model/register_page_model.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'DoJob',
+      title: 'DooJob - Encontre a mais perto de você',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 202, 128, 54)),
         useMaterial3: true,
@@ -28,6 +30,9 @@ class MyApp extends StatelessWidget {
         '/likes': (context) => const HomeScreen(selectedIndex: 1),
         '/login': (context) => const HomeScreen(selectedIndex: 2),
         '/register': (context) => const HomeScreen(selectedIndex: 3),
+        '/register_model': (context) => const HomeScreen(selectedIndex: 4),
+        '/painel': (context) => const HomeScreen(selectedIndex: 5),
+        '/login_model': (context) => const HomeScreen(selectedIndex: 6),
       },
       onUnknownRoute: (settings) {
         return MaterialPageRoute(builder: (context) => UnknownPage());
@@ -49,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
   final LoginService loginService = LoginService(); // Instância de LoginService
   bool isLoggedIn = false;
+  bool isLoggedModel = false;
   bool _showCity = false;
   String? _userCity = 'Porto Alegre';
 
@@ -57,6 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
     const LikesPage(),
     LoginPage(),
     RegisterPage(),
+    RegisterPageModel(),
+    PainelPageModel(),
+    LoginPageModel()
   ];
 
   
@@ -95,8 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkLoginStatus() async {
     bool loggedIn = await loginService.isLogged();
+    bool loggedModel = await loginService.isLoggedModel();
     setState(() {
       isLoggedIn = loggedIn;
+      isLoggedModel = loggedModel;
     });
   }
 
@@ -125,6 +136,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+            if (isLoggedModel)
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Painel da Modelo'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/painel');
+              },
+            ),
+            if (!isLoggedModel)
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Feed'),
@@ -133,6 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/feed');
               },
             ),
+            if (!isLoggedModel)
             ListTile(
               leading: Icon(Icons.favorite),
               title: Text('Likes'),
@@ -142,14 +164,47 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             if (!isLoggedIn) // Exibe o botão de Login apenas se o usuário NÃO estiver logado
-              ListTile(
-                leading: Icon(Icons.login),
-                title: Text('Login'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
+            ExpansionTile(
+              leading: Icon(Icons.group),
+              title: Text('Cadastrar-se Grátis'),
+              children: <Widget>[
+                ListTile(
+                  title: Text('Quero ser Cliente'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/register');
+                  },
+                ),
+                ListTile(
+                  title: Text('Quero ser Acompanhante'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/register_model');
+                  },
+                ),
+              ],
+            ),
+            if (!isLoggedIn)
+            ExpansionTile(
+              leading: Icon(Icons.login),
+              title: Text('Login'),
+              children: <Widget>[
+                ListTile(
+                  title: Text('Login como Cliente'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/login');
+                  },
+                ),
+                ListTile(
+                  title: Text('Login como Acompanhante'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/login_model');
+                  },
+                ),
+              ],
+            ),
             if (isLoggedIn)
               ListTile(
                 leading: Icon(Icons.logout),
@@ -167,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _widgetOptions.elementAt(_selectedIndex), // Exibe a página correspondente
           Positioned(
-            top: 40,
+            top: 15,
             left: 20,
             child: Builder(
               builder: (context) {
@@ -196,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (_selectedIndex == 0) // Exibe o botão de localização apenas na rota de Feed
           Positioned(
-            top: 40,
+            top: 15,
             left: 85, // Ajuste a posição horizontal
             child: Row(
               children: [
@@ -211,14 +266,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           content: RichText(
                             text: TextSpan(
                               text: 'Você está em ',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.black, // Cor do texto padrão
                                 fontSize: 16, // Tamanho do texto
                               ),
                               children: <TextSpan>[
                                 TextSpan(
                                   text: _userCity, // A cidade em negrito
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold, // Negrito para o texto da cidade
                                     color: Colors.black, // Cor preta para o texto da cidade
                                   ),
@@ -232,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               width: double.infinity, // Ocupar toda a largura da tela
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFFFF5252), // Cor de fundo (#ff5252)
+                                  backgroundColor: const Color(0xFFFF5252), // Cor de fundo (#ff5252)
                                   foregroundColor: Colors.white, // Cor do texto (branco)
                                 ),
                                 onPressed: () {
@@ -253,14 +308,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   child: Icon(
-                    Icons.location_on,
-                    color: _userCity != 'Cidade não definida' ? Colors.green : Colors.red,
+                    Icons.filter_alt,
+                    color: Colors.black
                   ),
                 ),
                 // Animação para exibir e ocultar o texto
                 AnimatedOpacity(
                   opacity: _showCity ? 1.0 : 0.0,
-                  duration: Duration(milliseconds: 1000), // Tempo de fade out
+                  duration: const Duration(milliseconds: 1000), // Tempo de fade out
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(

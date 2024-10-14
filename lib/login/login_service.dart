@@ -10,7 +10,7 @@ class LoginService {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   // Método para logar
-  Future<bool> login(String phone, String password) async {
+  Future<bool> login(String phone, String password, bool isModel) async {
     final url = Uri.parse('$baseUrl/v1/login'); // Ajuste para a rota correta de login da API
 
     final response = await http.post(
@@ -22,17 +22,18 @@ class LoginService {
       body: jsonEncode({
         'telephone': phone,
         'password': password,
+        'is_model': isModel
       }),
     );
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final token = responseData['access_token'];
+      final isModel = responseData['is_model'];
 
       // Salva o token de forma segura
       await storage.write(key: 'bearer_token', value: token);
-
-      print("bearer_token salvo: $token");
+      await storage.write(key: 'is_model', value: isModel.toString());
 
       return true; // Login bem-sucedido
     } else {
@@ -75,6 +76,16 @@ class LoginService {
 
     if (token != null) {
      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> isLoggedModel() async {
+    final isModel = await storage.read(key: 'is_model'); // Verifica se o token existe
+
+    if (isModel != null && isModel == "1") {
+      return true;
     }
 
     return false;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+//import 'dart:ffi';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,8 +11,10 @@ class RegisterService {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   // Método para logar
-  Future<bool> register(String name, String telephone, String password) async {
+  Future<bool> register(String name, String telephone, String password, bool isModel) async {
     final url = Uri.parse('$baseUrl/v1/users'); // Ajuste para a rota correta de login da API
+
+    print('Entrou aqui');
 
     final response = await http.post(
       url,
@@ -23,17 +26,21 @@ class RegisterService {
         'name': name,
         'password': password,
         'telephone': telephone,
+        'is_model': isModel,
       }),
     );
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final token = responseData['access_token'];
+      final isModel = responseData['is_model'];
 
       // Salva o token de forma segura
       await storage.write(key: 'bearer_token', value: token);
 
-      print("bearer_token salvo: $token");
+      await storage.write(key: 'is_model', value: isModel.toString());
+
+      print("Login bem sucedido");
 
       return true; // Login bem-sucedido
     } else {

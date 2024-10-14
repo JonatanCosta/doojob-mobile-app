@@ -326,7 +326,7 @@ class _FeedPageState extends State<FeedPage> {
         ),
         // Contador de imagens no canto superior direito
         Positioned(
-          top: 50,
+          top: 15,
           right: 20,
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),

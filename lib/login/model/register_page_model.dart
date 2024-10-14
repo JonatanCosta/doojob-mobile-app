@@ -4,24 +4,57 @@ import 'package:do_job_app/login/register_service.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
 
-class RegisterPage extends StatefulWidget {
+class RegisterPageModel extends StatefulWidget {
   @override
-  _RegisterPage createState() => _RegisterPage();
+  _RegisterPageModel createState() => _RegisterPageModel();
 }
 
-class _RegisterPage extends State<RegisterPage> {
+class _RegisterPageModel extends State<RegisterPageModel> {
   @override
   void initState() {
     super.initState();
     _checkLoginStatus(); // Verifica o status de login ao iniciar a página
+  }
 
-    // Adiciona um listener para exibir o popup quando o campo de telefone perde o foco
-    _phoneFocusNode.addListener(() {
-      if (_phoneFocusNode.hasFocus && !_popupShown) {
-        _showPhonePopup();
-      }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // Usa addPostFrameCallback para garantir que o popup é exibido após a construção
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showPopup();
     });
   }
+
+  // Método que exibe o popup
+  void _showPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+           title: Row(
+              children: [
+                Icon(Icons.campaign, color: Color(0xFFFF5252)), // Ícone adicionado
+                SizedBox(width: 8), // Espaçamento entre o ícone e o texto
+                Text('Anuncie Gratuitamente!'),
+              ],
+            ),
+          content: Text(
+              'Anunciar em nossa plataforma é 100% gratuito. Finalize hoje e aproveite!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o popup
+              },
+              child: Text('Entendi'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  
 
   @override
   void dispose() {
@@ -29,32 +62,6 @@ class _RegisterPage extends State<RegisterPage> {
     super.dispose();
   }
 
-  // Função que exibe o popup
-  void _showPhonePopup() {
-    setState(() {
-      _popupShown = true; // Marca que o popup já foi exibido
-    });
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Privacidade do Telefone'),
-          content: const Text(
-            'Fique tranquilo! Não enviaremos nenhuma mensagem para o número informado.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Ok'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Future<void> _checkLoginStatus() async {
     final token = await loginService.getBearerToken(); // Verifica se o token existe
@@ -73,7 +80,6 @@ class _RegisterPage extends State<RegisterPage> {
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false; // Indicador de loading
-  bool _popupShown = false;
 
   // Instância do LoginService
   final LoginService loginService = LoginService();
@@ -90,7 +96,7 @@ class _RegisterPage extends State<RegisterPage> {
     });
 
     // Utiliza o serviço de login para autenticar o usuário
-    final success = await registerService.register(name, telephone, password, false);
+    final success = await registerService.register(name, telephone, password, true);
 
     setState(() {
       _isLoading = false;
@@ -98,7 +104,7 @@ class _RegisterPage extends State<RegisterPage> {
 
     if (success) {
       // Login bem-sucedido, redireciona para a página principal
-      Navigator.pushReplacementNamed(context, '/feed');
+      Navigator.pushReplacementNamed(context, '/painel');
     } else {
       // Exibe uma mensagem de erro em caso de falha no login
       // ScaffoldMessenger.of(context).showSnackBar(
