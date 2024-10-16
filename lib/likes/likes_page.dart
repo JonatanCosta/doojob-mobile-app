@@ -1,3 +1,4 @@
+import 'package:do_job_app/likes/like_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:go_router/go_router.dart';
 
 class LikesPage extends StatefulWidget {
   const LikesPage({Key? key}) : super(key: key);
@@ -46,7 +48,7 @@ class _LikesPageState extends State<LikesPage> {
         print('Erro ao buscar os likes');
       }
     } else {
-      Navigator.pushNamed(context, '/login');
+      context.go('/login');
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:do_job_app/login/login_service.dart';
 import 'package:do_job_app/login/register_service.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'package:go_router/go_router.dart';
 
 
 class RegisterPage extends StatefulWidget {
@@ -236,7 +237,8 @@ class _RegisterPage extends State<RegisterPage> {
               width: double.infinity, // Ocupa 100% da largura
               child: TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/login');
+                  //Navigator.pushNamed(context, '/login');
+                  context.go('/login'); // Navega para a página de login
                 },
                 style: TextButton.styleFrom(
                   backgroundColor: const Color(0xFF212121), // Fundo preto

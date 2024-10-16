@@ -62,6 +62,12 @@ class MyApp extends StatelessWidget {
           },
         ),
       ],
+      redirect: (context, state) {
+        if (state.subloc == '/') {
+          return '/feed';  // Redireciona a rota raiz para /feed
+        }
+        return null;  // Sem redirecionamento se não for a rota '/'
+      },
       errorBuilder: (context, state) => UnknownPage(), // Página 404
     );
 
@@ -237,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Text('Sair'),
                 onTap: () async {
                   await loginService.logout();
-                  context.go('/feed');
+                  return context.go('/feed');
                 },
               ),
           ],

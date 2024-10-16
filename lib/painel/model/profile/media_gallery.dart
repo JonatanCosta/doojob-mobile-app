@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../upload/upload_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data'; // Para exibir a imagem em memória no web
+import 'package:go_router/go_router.dart';
 
 
 class MediaGallery extends StatelessWidget {
@@ -180,7 +181,8 @@ class MediaGallery extends StatelessWidget {
 
                   // Fecha o modal e redireciona para o painel após o envio
                   Navigator.of(dialogContext).pop();
-                  Navigator.pushNamed(context, '/painel');
+                  //Navigator.pushNamed(context, '/painel');
+                  dialogContext.go('/painel');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isUploading ? Colors.grey : Color(0xFFFF5252), // Cor do botão

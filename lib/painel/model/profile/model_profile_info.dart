@@ -202,7 +202,7 @@ class ModelProfileInfo extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/painel/preferences');
+                    //Navigator.pushNamed(context, '/painel/preferences');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,

@@ -68,7 +68,8 @@ class LoginService {
 
   // Método para logout
   Future<void> logout() async {
-    await storage.delete(key: 'bearer_token'); // Remove o token ao fazer logout
+    await storage.delete(key: 'bearer_token'); 
+    await storage.delete(key: 'is_model');// Remove o token ao fazer logout
   }
 
   Future<bool> isLogged() async {

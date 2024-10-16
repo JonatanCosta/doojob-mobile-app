@@ -243,7 +243,8 @@ class _RegisterPageModel extends State<RegisterPageModel> {
               width: double.infinity, // Ocupa 100% da largura
               child: TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/login');
+                  //Navigator.pushNamed(context, '/login');
+                  context.go('/login'); // Navega para a página de login
                 },
                 style: TextButton.styleFrom(
                   backgroundColor: const Color(0xFF212121), // Fundo preto
