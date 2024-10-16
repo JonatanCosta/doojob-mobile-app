@@ -8,8 +8,14 @@ import 'feed/feed_page.dart';
 import 'login/login_service.dart';
 import 'package:do_job_app/geolocation/location.dart';
 import 'login/model/register_page_model.dart';
+import 'profile/profile.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // Import necessário para configurar a URL
 
-void main() async {
+
+void main() {
+  setUrlStrategy(PathUrlStrategy()); // Remove o # da URL
+
   runApp(const MyApp());
 }
 
@@ -18,33 +24,63 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final GoRouter _router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/feed',
+          builder: (context, state) => const HomeScreen(selectedIndex: 0),
+        ),
+        GoRoute(
+          path: '/likes',
+          builder: (context, state) => const HomeScreen(selectedIndex: 1),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const HomeScreen(selectedIndex: 2),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const HomeScreen(selectedIndex: 3),
+        ),
+        GoRoute(
+          path: '/register_model',
+          builder: (context, state) => const HomeScreen(selectedIndex: 4),
+        ),
+        GoRoute(
+          path: '/painel',
+          builder: (context, state) => const HomeScreen(selectedIndex: 5),
+        ),
+        GoRoute(
+          path: '/login_model',
+          builder: (context, state) => const HomeScreen(selectedIndex: 6),
+        ),
+        GoRoute(
+          path: '/p/:girlID',
+          builder: (context, state) {
+            final girlID = state.params['girlID']!;
+            return HomeScreen(selectedIndex: 7, paramID: girlID);
+          },
+        ),
+      ],
+      errorBuilder: (context, state) => UnknownPage(), // Página 404
+    );
+
+    return MaterialApp.router(
       title: 'DooJob - Encontre a mais perto de você',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 202, 128, 54)),
         useMaterial3: true,
       ),
-      initialRoute: '/feed',
-      routes: {
-        '/feed': (context) => const HomeScreen(selectedIndex: 0),
-        '/likes': (context) => const HomeScreen(selectedIndex: 1),
-        '/login': (context) => const HomeScreen(selectedIndex: 2),
-        '/register': (context) => const HomeScreen(selectedIndex: 3),
-        '/register_model': (context) => const HomeScreen(selectedIndex: 4),
-        '/painel': (context) => const HomeScreen(selectedIndex: 5),
-        '/login_model': (context) => const HomeScreen(selectedIndex: 6),
-      },
-      onUnknownRoute: (settings) {
-        return MaterialPageRoute(builder: (context) => UnknownPage());
-      },
+      routerConfig: _router, // Usa GoRouter para gerenciar as rotas
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
   final int selectedIndex;
+  final String? paramID;
 
-  const HomeScreen({super.key, required this.selectedIndex});
+  const HomeScreen({super.key, required this.selectedIndex, this.paramID});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -52,7 +88,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex;
-  final LoginService loginService = LoginService(); // Instância de LoginService
+  final LoginService loginService = LoginService();
   bool isLoggedIn = false;
   bool isLoggedModel = false;
   bool _showCity = false;
@@ -65,10 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
     RegisterPage(),
     RegisterPageModel(),
     PainelPageModel(),
-    LoginPageModel()
+    LoginPageModel(),
   ];
-
-  
 
   @override
   void initState() {
@@ -88,17 +122,16 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
 
-      // Exibe o texto por 3 segundos, e depois inicia o fade out suave
-      if (_showCity) {
-        Future.delayed(Duration(seconds: 4), () {
-          if (mounted) {
-            setState(() {
-              _showCity = false;
-            });
-          }
-        });
+        if (_showCity) {
+          Future.delayed(Duration(seconds: 4), () {
+            if (mounted) {
+              setState(() {
+                _showCity = false;
+              });
+            }
+          });
+        }
       }
-    }
     });
   }
 
@@ -141,8 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.home),
               title: Text('Painel da Modelo'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/painel');
+                context.go('/painel');
               },
             ),
             if (!isLoggedModel)
@@ -150,8 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.home),
               title: Text('Feed'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/feed');
+                context.go('/feed');
               },
             ),
             if (!isLoggedModel)
@@ -159,8 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: Icon(Icons.favorite),
               title: Text('Likes'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/likes');
+                context.go('/likes');
               },
             ),
             if (!isLoggedIn) // Exibe o botão de Login apenas se o usuário NÃO estiver logado
@@ -171,15 +201,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ListTile(
                   title: Text('Quero ser Cliente'),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/register');
+                    context.go('/register');
                   },
                 ),
                 ListTile(
                   title: Text('Quero ser Acompanhante'),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/register_model');
+                    context.go('/register_model');
                   },
                 ),
               ],
@@ -192,15 +220,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ListTile(
                   title: Text('Login como Cliente'),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/login');
+                    context.go('/login');
                   },
                 ),
                 ListTile(
                   title: Text('Login como Acompanhante'),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/login_model');
+                    context.go('/login_model');
                   },
                 ),
               ],
@@ -211,8 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Text('Sair'),
                 onTap: () async {
                   await loginService.logout();
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/feed');
+                  context.go('/feed');
                 },
               ),
           ],
@@ -220,6 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Stack(
         children: [
+          _selectedIndex == 7 ? ProfilePage(girlID: widget.paramID!) :
           _widgetOptions.elementAt(_selectedIndex), // Exibe a página correspondente
           Positioned(
             top: 15,
@@ -280,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                          ),
+                                                   ),
                           actions: [
                             // Botão para alterar a cidade
                             SizedBox(
@@ -292,7 +318,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 onPressed: () {
                                   Navigator.of(context).pop(); // Fecha o popup
-                                  // Aqui você pode adicionar a lógica para alterar a cidade
                                   LocationService locationService = LocationService();
                                   locationService.showCitySelectionPopup(context);
                                 },
@@ -309,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Icon(
                     Icons.filter_alt,
-                    color: Colors.black
+                    color: Colors.black,
                   ),
                 ),
                 // Animação para exibir e ocultar o texto

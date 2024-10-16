@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:do_job_app/login/login_service.dart'; // Importe o serviço de login
+import 'package:go_router/go_router.dart';
 
 class LikeService {
   final BuildContext context;
@@ -85,7 +86,8 @@ class LikeService {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop(); // Fecha o diálogo
-                      Navigator.pushNamed(context, '/login'); // Navega para a rota de login
+                      //Navigator.pushNamed(context, '/login'); // Navega para a rota de login
+                      context.go('/login');
                     },
                   ),
                 ),
@@ -105,7 +107,8 @@ class LikeService {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop(); // Fecha o diálogo
-                      Navigator.pushNamed(context, '/register'); // Navega para a rota de cadastro
+                      //Navigator.pushNamed(context, '/register'); // Navega para a rota de cadastro
+                      context.go('/register');
                     },
                   ),
                 ),

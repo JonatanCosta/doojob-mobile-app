@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:do_job_app/login/login_service.dart'; // Importe o serviço de login
 import 'package:animated_text_kit/animated_text_kit.dart'; // Importe a biblioteca de animação
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
     if (token != null) {
       // Se estiver logado, redireciona para o feed
       // ignore: use_build_context_synchronously
-      Navigator.pushReplacementNamed(context, '/feed');
+      context.go('/feed');
     }
   }
 
@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (success) {
       // Login bem-sucedido, redireciona para a página principal
-      Navigator.pushReplacementNamed(context, '/feed');
+      context.go('/feed');
     } else {
       // Exibe uma mensagem de erro em caso de falha no login
       ScaffoldMessenger.of(context).showSnackBar(

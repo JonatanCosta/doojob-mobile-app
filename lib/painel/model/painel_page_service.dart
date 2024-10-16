@@ -29,6 +29,27 @@ class PainelPageService {
   }
 
   // Método para buscar os dados da model
+  Future<Map<String, dynamic>?> fetchProfile(String girlID) async {
+    // Busca o token armazenado
+    String? token = await storage.read(key: 'bearer_token');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/v1/girl/$girlID'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['model']; // Supondo que o retorno seja um objeto "girl"
+    } else {
+      return null;
+    }
+  }
+
+  // Método para buscar os dados da model
   Future<Map<String, dynamic>?> fetchUser() async {
     // Busca o token armazenado
     String? token = await storage.read(key: 'bearer_token');

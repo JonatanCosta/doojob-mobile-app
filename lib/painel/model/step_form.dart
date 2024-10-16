@@ -1,13 +1,21 @@
+import 'package:do_job_app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:do_job_app/painel/model/painel_page_service.dart';
+import 'package:go_router/go_router.dart';
 
 class StepForm extends StatefulWidget {
+  final Map<String, dynamic> loggedUser; // Aceita o loggedUser como parâmetro
+
+  StepForm({required this.loggedUser});
   @override
+  // ignore: library_private_types_in_public_api
   _StepFormState createState() => _StepFormState();
 }
 
 class _StepFormState extends State<StepForm> {
+  bool isLoading = false; // Adiciona o estado de carregamento
+
   int _currentStep = 0;
 
   // Controladores para os dados dos formulários
@@ -36,6 +44,28 @@ class _StepFormState extends State<StepForm> {
     filter: { "#": RegExp(r'[0-9]') },
   );
 
+  @override
+  void initState() {
+    super.initState();
+
+    // Preenche os campos com base nos dados do loggedUser
+    _nameController.text = widget.loggedUser['name'] ?? '';
+
+    // Aplica a máscara ao valor programático
+    String rawPhone = widget.loggedUser['telephone'] ?? '';
+    String maskedPhone = phoneMaskFormatter.maskText(rawPhone);
+
+    // Define o valor no controlador de telefone
+    _phoneController.text = maskedPhone;
+
+    // Atualiza a máscara com o valor
+    phoneMaskFormatter.updateMask(mask: '(##) # ####-####');
+    phoneMaskFormatter.formatEditUpdate(
+      TextEditingValue.empty, 
+      TextEditingValue(text: maskedPhone),
+    );
+  }
+
   List<Step> _steps() => [
         Step(
           title: Text('Dados Básicos'),
@@ -61,38 +91,38 @@ class _StepFormState extends State<StepForm> {
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  controller: _emailController,
+                  inputFormatters: [phoneMaskFormatter],
+                  keyboardType: TextInputType.phone,
+                  controller: _phoneController,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: 'WhatsApp para Clientes',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor, insira o email';
+                      return 'Por favor, insira o whatsapp';
                     }
                     return null;
                   },
                 ),
                 SizedBox(height: 20),
                 TextFormField(
-                  inputFormatters: [phoneMaskFormatter],
-                  keyboardType: TextInputType.phone,
-                  controller: _phoneController,
+                  controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Telefone',
+                    labelText: 'E-mail',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor, insira o telefone';
+                      return 'Por favor, insira um email de contato';
                     }
                     return null;
                   },
-                ),
+                )
               ],
             ),
           ),
@@ -109,7 +139,7 @@ class _StepFormState extends State<StepForm> {
                   controller: _descriptionController,
                   maxLines: 5,
                   decoration: InputDecoration(
-                    labelText: 'Descrição (Para atrair os clientes)',
+                    labelText: 'Descrição (Para atrair os seus clientes)',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                     ),
@@ -132,6 +162,7 @@ class _StepFormState extends State<StepForm> {
             key: _formKeys[2],
             child: Column(
               children: [
+                SizedBox(height: 5),
                 TextFormField(
                   controller: _ageController,
                   decoration: InputDecoration(
@@ -294,6 +325,10 @@ class _StepFormState extends State<StepForm> {
     if (_formKeys[_currentStep].currentState!.validate()) {
       _formKeys[_currentStep].currentState!.save();
 
+      setState(() {
+        isLoading = true; // Exibe o loader quando a submissão começa
+      });
+
       final response = await PainelPageService().submitGirlData({
         'name': _nameController.text,
         'email': _emailController.text,
@@ -308,15 +343,25 @@ class _StepFormState extends State<StepForm> {
         'waist': _waistController.text,
         'hip': _hipController.text,
       });
+      
 
       if (response != null) {
+        setState(() {
+          isLoading = false; // Exibe o loader quando a submissão começa
+        });
+
         // Exibe uma mensagem de sucesso ou redireciona o usuário
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Dados enviados com sucesso!')),
         );
         // Redireciona o usuário após o envio bem-sucedido
-        Navigator.pushNamed(context, '/painel');
+        //Navigator.pushNamed(context, '/painel');
+        context.go('/painel');
+        
       } else {
+        setState(() {
+          isLoading = false; // Exibe o loader quando a submissão começa
+        });
         // Exibe uma mensagem de erro
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Falha ao cadastrar. Tente novamente.')),
@@ -328,94 +373,107 @@ class _StepFormState extends State<StepForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(top: 35.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20.0),
-              child: Text(
-                'Finalize seu cadastro!',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.black, // Cor do título
-                ),
-              ),
-            ),
-            Expanded(
-              child: Theme(
-                data: ThemeData(
-                  colorScheme: ColorScheme.light(
-                    primary: Color(0xFFFF5252), // Cor para os steps ativos
-                    secondary: Colors.grey,     // Cor para os steps inativos
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 35.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: Text(
+                    'Finalize seu cadastro!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.black, // Cor do título
+                    ),
                   ),
                 ),
-                child: Stepper(
-                  currentStep: _currentStep,
-                  onStepContinue: () {
-                    if (_formKeys[_currentStep].currentState!.validate()) {
-                      if (_currentStep < _steps().length - 1) {
-                        setState(() {
-                          _currentStep++;
-                        });
-                      } else {
-                        _submitForm(); // Submete o formulário ao completar o último step
-                      }
-                    }
-                  },
-                  onStepCancel: () {
-                    if (_currentStep > 0) {
-                      setState(() {
-                        _currentStep--;
-                      });
-                    }
-                  },
-                  steps: _steps(),
-                  controlsBuilder: (BuildContext context, ControlsDetails details) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          ElevatedButton(
-                            onPressed: details.onStepContinue,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFFF5252),
-                              minimumSize: Size(150, 50), // Tamanho maior do botão
-                            ),
-                            child: Text(
-                              _currentStep == _steps().length - 1 ? 'Enviar' : 'Próximo',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                          if (_currentStep > 0)
-                            ElevatedButton(
-                              onPressed: details.onStepCancel,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black, // Cor de fundo do botão anterior
-                                minimumSize: Size(150, 50),
-                              ),
-                              child: Text(
-                                'Anterior',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                        ],
+                Expanded(
+                  child: Theme(
+                    data: ThemeData(
+                      colorScheme: ColorScheme.light(
+                        primary: Color(0xFFFF5252), // Cor para os steps ativos
+                        secondary: Colors.grey, // Cor para os steps inativos
                       ),
-                    );
-                  },
+                    ),
+                    child: AbsorbPointer(
+                      absorbing: isLoading, // Impede interação durante o carregamento
+                      child: Stepper(
+                        currentStep: _currentStep,
+                        onStepContinue: () {
+                          if (_formKeys[_currentStep].currentState!.validate()) {
+                            if (_currentStep < _steps().length - 1) {
+                              setState(() {
+                                _currentStep++;
+                              });
+                            } else {
+                              _submitForm(); // Submete o formulário ao completar o último step
+                            }
+                          }
+                        },
+                        onStepCancel: () {
+                          if (_currentStep > 0) {
+                            setState(() {
+                              _currentStep--;
+                            });
+                          }
+                        },
+                        steps: _steps(),
+                        controlsBuilder: (BuildContext context, ControlsDetails details) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                ElevatedButton(
+                                  onPressed: details.onStepContinue,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Color(0xFFFF5252),
+                                    minimumSize: Size(150, 50), // Tamanho maior do botão
+                                  ),
+                                  child: Text(
+                                    _currentStep == _steps().length - 1 ? 'Enviar' : 'Próximo',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                if (_currentStep > 0)
+                                  ElevatedButton(
+                                    onPressed: details.onStepCancel,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black, // Cor de fundo do botão anterior
+                                      minimumSize: Size(150, 50),
+                                    ),
+                                    child: Text(
+                                      'Anterior',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
+              ],
+            ),
+          ),
+          if (isLoading) // Exibe o loader durante o carregamento
+            Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)), // Cor personalizada do loader
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
