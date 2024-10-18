@@ -181,8 +181,10 @@ class MediaGallery extends StatelessWidget {
 
                   // Fecha o modal e redireciona para o painel após o envio
                   Navigator.of(dialogContext).pop();
+
+                  Navigator.of(context).pop();
                   //Navigator.pushNamed(context, '/painel');
-                  dialogContext.go('/painel');
+                  context.pushReplacement('/painel');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isUploading ? Colors.grey : Color(0xFFFF5252), // Cor do botão
