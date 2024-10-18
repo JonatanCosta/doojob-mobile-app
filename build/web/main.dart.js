@@ -8050,7 +8050,7 @@ _.f=a
 _.c=_.a=null},
 au3:function au3(a,b){this.a=a
 this.b=b},
-aIR(){return new A.amv("https://api.doojob.com.br//v1/girl/upload-profile-image","https://api.doojob.com.br//v1/girl/upload-cover-image","https://api.doojob.com.br//v1/girl/upload-feed-image",new A.Mt())},
+aIR(){return new A.amv("https://api.doojob.com.br/v1/girl/upload-profile-image","https://api.doojob.com.br/v1/girl/upload-cover-image","https://api.doojob.com.br/v1/girl/upload-feed-image",new A.Mt())},
 amv:function amv(a,b,c,d){var _=this
 _.a=a
 _.b=b
@@ -42194,7 +42194,7 @@ var $async$v8=A.z(function(b,c){if(b===1)return A.A(c,r)
 while(true)switch(s){case 0:s=3
 return A.w(new A.jt().io(),$async$v8)
 case 3:o=c
-n=A.cu("https://api.doojob.com.br//v1/girls?page="+a,0,null)
+n=A.cu("https://api.doojob.com.br/v1/girls?page="+a,0,null)
 m=t.N
 m=A.y(m,m)
 m.n(0,"Content-Type","application/json")
@@ -42624,7 +42624,7 @@ return A.w(m.vF(),$async$oE)
 case 5:s=f?2:4
 break
 case 2:p=t.N
-o="https://api.doojob.com.br//v1/like/"+c
+o="https://api.doojob.com.br/v1/like/"+c
 l=A
 s=6
 return A.w(m.io(),$async$oE)
@@ -42681,7 +42681,7 @@ s=n!=null?3:5
 break
 case 3:p=t.N
 s=6
-return A.w(A.a1h(A.cu("https://api.doojob.com.br//v1/likes",0,null),A.ar(["Authorization","Bearer "+n,"Content-Type","application/json"],p,p)),$async$v9)
+return A.w(A.a1h(A.cu("https://api.doojob.com.br/v1/likes",0,null),A.ar(["Authorization","Bearer "+n,"Content-Type","application/json"],p,p)),$async$v9)
 case 6:o=b
 if(o.b===200)q.a0(new A.asO(q,B.aV.d8(0,A.xH(J.ao(A.xy(o.e).c.a,"charset")).d8(0,o.w))))
 else A.ey("Erro ao buscar os likes")
@@ -42703,7 +42703,7 @@ break
 case 3:p=t.N
 o=t.Pu
 s=5
-return A.w(A.aDx(A.cu("https://api.doojob.com.br//v1/like/"+a,0,null),A.ar(["Authorization","Bearer "+n,"Content-Type","application/json"],p,p)),$async$re)
+return A.w(A.aDx(A.cu("https://api.doojob.com.br/v1/like/"+a,0,null),A.ar(["Authorization","Bearer "+n,"Content-Type","application/json"],p,p)),$async$re)
 case 5:if(d.b===200){q.a0(new A.asP(q,b))
 p=q.c.X(o)
 p.toString
@@ -42820,7 +42820,7 @@ A.jt.prototype={
 oB(a,b,c){return this.aqO(a,b,c)},
 aqO(a,b,c){var s=0,r=A.D(t.y),q,p,o,n,m,l,k
 var $async$oB=A.z(function(d,e){if(d===1)return A.A(e,r)
-while(true)switch(s){case 0:n=A.cu("https://api.doojob.com.br//v1/login",0,null)
+while(true)switch(s){case 0:n=A.cu("https://api.doojob.com.br/v1/login",0,null)
 m=t.N
 l=A.ar(["Content-Type","application/json","Accept","application/json"],m,m)
 s=3
@@ -43112,7 +43112,7 @@ A.P7.prototype={
 oP(a,b,c,d,e){return this.asR(0,b,c,d,e)},
 asR(a,b,c,d,e){var s=0,r=A.D(t.y),q,p,o,n,m,l,k
 var $async$oP=A.z(function(f,g){if(f===1)return A.A(g,r)
-while(true)switch(s){case 0:k=A.cu("https://api.doojob.com.br//v1/users",0,null)
+while(true)switch(s){case 0:k=A.cu("https://api.doojob.com.br/v1/users",0,null)
 A.ey("Entrou aqui")
 p=t.N
 o=A.ar(["Content-Type","application/json","Accept","application/json"],p,p)
@@ -43455,7 +43455,7 @@ if(n==null){q=null
 s=1
 break}p=t.N
 s=4
-return A.w(A.a1h(A.cu("https://api.doojob.com.br//v1/girl",0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+n],p,p)),$async$v7)
+return A.w(A.a1h(A.cu("https://api.doojob.com.br/v1/girl",0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+n],p,p)),$async$v7)
 case 4:o=b
 if(o.b===200){q=J.ao(B.aV.d8(0,A.xH(J.ao(A.xy(o.e).c.a,"charset")).d8(0,o.w)),"model")
 s=1
@@ -43471,7 +43471,7 @@ return A.w(B.bt.oO(0,"bearer_token"),$async$va)
 case 3:p=c
 o=t.N
 s=4
-return A.w(A.a1h(A.cu("https://api.doojob.com.br//v1/girl/"+a,0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+A.j(p)],o,o)),$async$va)
+return A.w(A.a1h(A.cu("https://api.doojob.com.br/v1/girl/"+a,0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+A.j(p)],o,o)),$async$va)
 case 4:n=c
 if(n.b===200){q=J.ao(B.aV.d8(0,A.xH(J.ao(A.xy(n.e).c.a,"charset")).d8(0,n.w)),"model")
 s=1
@@ -43488,7 +43488,7 @@ if(n==null){q=null
 s=1
 break}p=t.N
 s=4
-return A.w(A.a1h(A.cu("https://api.doojob.com.br//v1/user",0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+n],p,p)),$async$vb)
+return A.w(A.a1h(A.cu("https://api.doojob.com.br/v1/user",0,null),A.ar(["Content-Type","application/json","Authorization","Bearer "+n],p,p)),$async$vb)
 case 4:o=b
 if(o.b===200){q=J.ao(B.aV.d8(0,A.xH(J.ao(A.xy(o.e).c.a,"charset")).d8(0,o.w)),"user")
 s=1
@@ -43502,7 +43502,7 @@ var $async$rU=A.z(function(b,c){if(b===1)return A.A(c,r)
 while(true)switch(s){case 0:s=3
 return A.w(B.bt.oO(0,"bearer_token"),$async$rU)
 case 3:p=c
-o=A.cu("https://api.doojob.com.br//v1/girls",0,null)
+o=A.cu("https://api.doojob.com.br/v1/girls",0,null)
 n=t.N
 n=A.ar(["Content-Type","application/json","Authorization","Bearer "+A.j(p)],n,n)
 s=4
