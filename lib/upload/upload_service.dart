@@ -66,6 +66,7 @@ class UploadService {
       }
     } catch (e) {
       print('Erro ao enviar imagem: $e');
+      throw e;
     }
   }
 }

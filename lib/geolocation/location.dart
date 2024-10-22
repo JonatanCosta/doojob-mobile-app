@@ -2,6 +2,7 @@ import 'package:geocoding/geocoding.dart'; // Para geocodificação
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 class LocationService {
   // Solicita a permissão de localização e aguarda a resposta do navegador
@@ -104,7 +105,7 @@ class LocationService {
     }
   }
 
- void showCitySelectionPopup(BuildContext context) async {
+ Future<void> showCitySelectionPopup(BuildContext context) async {
   Map<String, String> selectedCity = {
     'text': 'Porto Alegre',
     'value': 'POA'
@@ -114,6 +115,9 @@ class LocationService {
     {'text': 'Porto Alegre', 'value': 'POA'},
     // Adicione outras cidades aqui, se necessário
   ];
+
+  // Use um Completer para permitir o uso de await
+  final Completer<void> completer = Completer<void>();
 
   showDialog(
     context: context,
@@ -148,6 +152,8 @@ class LocationService {
                   await prefs.setString('userCityValue', selectedCity['value']!);
 
                   Navigator.of(context).pop();
+
+                  completer.complete(); // Completa a Future quando a ação for concluída
                 },
                 child: const Text('Confirmar'),
               ),
@@ -157,6 +163,8 @@ class LocationService {
       );
     },
   );
+
+  return completer.future; // Retorna a Future que será completada
 }
 
   // Salva a cidade manualmente em SharedPreferences
@@ -240,7 +248,7 @@ class LocationService {
 
       // Exibe mensagem de erro ao usuário
       //Navigator.of(context).pop();  // Fecha o popup
-      showCitySelectionPopup(context);
+      await showCitySelectionPopup(context);
     }
   }
 
@@ -258,5 +266,10 @@ class LocationService {
   Future<bool> hasCitySaved() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.containsKey('userCity');
+  }
+
+  Future<String?> getCity() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userCity');
   }
 }

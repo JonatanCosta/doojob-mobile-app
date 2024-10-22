@@ -322,30 +322,29 @@ class _StepFormState extends State<StepForm> {
       ];
 
   void _submitForm() async {
-    if (_formKeys[_currentStep].currentState!.validate()) {
-      _formKeys[_currentStep].currentState!.save();
+    try {
+      if (_formKeys[_currentStep].currentState!.validate()) {
+        _formKeys[_currentStep].currentState!.save();
 
-      setState(() {
-        isLoading = true; // Exibe o loader quando a submissão começa
-      });
+        setState(() {
+          isLoading = true; // Exibe o loader quando a submissão começa
+        });
 
-      final response = await PainelPageService().submitGirlData({
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'description': _descriptionController.text,
-        'telephone': phoneMaskFormatter.getUnmaskedText(),
-        'age': _ageController.text,
-        'height': _heightController.text,
-        'weight': _weightController.text,
-        'feet': _feetController.text,
-        'hair': _hairController.text,
-        'eyes': _eyesController.text,
-        'waist': _waistController.text,
-        'hip': _hipController.text,
-      });
-      
-
-      if (response != null) {
+        final response = await PainelPageService().submitGirlData({
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'description': _descriptionController.text,
+          'telephone': phoneMaskFormatter.getUnmaskedText(),
+          'age': _ageController.text,
+          'height': _heightController.text,
+          'weight': _weightController.text,
+          'feet': _feetController.text,
+          'hair': _hairController.text,
+          'eyes': _eyesController.text,
+          'waist': _waistController.text,
+          'hip': _hipController.text,
+        });
+        
         setState(() {
           isLoading = false; // Exibe o loader quando a submissão começa
         });
@@ -355,18 +354,17 @@ class _StepFormState extends State<StepForm> {
           SnackBar(content: Text('Dados enviados com sucesso!')),
         );
         // Redireciona o usuário após o envio bem-sucedido
-        //Navigator.pushNamed(context, '/painel');
-        context.go('/painel');
-        
-      } else {
-        setState(() {
-          isLoading = false; // Exibe o loader quando a submissão começa
-        });
-        // Exibe uma mensagem de erro
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Falha ao cadastrar. Tente novamente.')),
-        );
+        context.pushReplacement('/painel');
       }
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Exibe o loader quando a submissão começa
+      });
+
+      // Exibe uma mensagem de erro
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Falha ao cadastrar. Tente novamente.')),
+      );
     }
   }
 

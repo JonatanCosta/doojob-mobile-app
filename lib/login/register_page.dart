@@ -63,7 +63,7 @@ class _RegisterPage extends State<RegisterPage> {
     if (token != null) {
       // Se estiver logado, redireciona para o feed
       // ignore: use_build_context_synchronously
-      Navigator.pushReplacementNamed(context, '/feed');
+      context.go('/painel');
     }
   }
 

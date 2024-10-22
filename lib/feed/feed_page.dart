@@ -252,27 +252,29 @@ class _FeedPageState extends State<FeedPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView.builder(
-        scrollDirection: Axis.vertical, // Troca para scroll vertical
-        itemCount: _models.length + (hasMore ? 1 : 0), // Adiciona 1 para o loader
-        onPageChanged: (index) {
-          if (index == _models.length - 1 && hasMore) {
-            fetchData(); // Carrega mais dados quando chega ao final da lista
-          }
+      body: _models.isEmpty && !isLoading
+          ? _buildNoModelsFound() // Exibe a mensagem personalizada quando não há modelos
+          : PageView.builder(
+              scrollDirection: Axis.vertical, // Troca para scroll vertical
+              itemCount: _models.length + (hasMore ? 1 : 0), // Adiciona 1 para o loader
+              onPageChanged: (index) {
+                if (index == _models.length - 1 && hasMore) {
+                  fetchData(); // Carrega mais dados quando chega ao final da lista
+                }
 
-          setState(() {
-            _currentImageIndex = 0;  // Reinicia o contador de imagens
-          });
-        },
-        itemBuilder: (context, index) {
-          if (index == _models.length) {
-            return _buildLoader();
-          }
+                setState(() {
+                  _currentImageIndex = 0; // Reinicia o contador de imagens
+                });
+              },
+              itemBuilder: (context, index) {
+                if (index == _models.length) {
+                  return _buildLoader();
+                }
 
-          final model = _models[index];
-          return _buildModelCard(model, index);
-        },
-      ),
+                final model = _models[index];
+                return _buildModelCard(model, index);
+              },
+            ),
     );
   }
 
@@ -460,9 +462,68 @@ class _FeedPageState extends State<FeedPage> {
 
   Widget _buildLoader() {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)), // Cor personalizada do loader
+      ));
     } else {
       return SizedBox.shrink();
     }
+  }
+
+  // Função para exibir a mensagem quando não há modelos encontrados
+  Widget _buildNoModelsFound() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '😔',
+              style: TextStyle(fontSize: 50), // Ícone triste grande
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Nenhuma modelo foi encontrada na sua região.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Clique abaixo para mudar a cidade.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () async {
+                LocationService locationService = LocationService();
+                await locationService.showCitySelectionPopup(context);
+
+                // Atualiza a lista de modelos após a mudança de cidade
+                setState(() {
+                  _models.clear();
+                  _liked.clear();
+                  currentPage = 1;
+                  hasMore = true;
+                  fetchData();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFFF5252), // Cor do botão
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Tamanho do botão
+              ),
+              child: Text(
+                'Mudar Cidade',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
