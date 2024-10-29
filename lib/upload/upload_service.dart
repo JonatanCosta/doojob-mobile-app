@@ -40,16 +40,8 @@ class UploadService {
       // Recupera o token do storage
       String? token = await _secureStorage.read(key: 'bearer_token');
 
-      // Lê o arquivo XFile como bytes e decodifica a imagem
+      // Lê o arquivo XFile como bytes
       Uint8List fileBytes = await imageFile.readAsBytes();
-      img.Image? decodedImage = img.decodeImage(fileBytes);
-
-      if (decodedImage == null) {
-        throw Exception('Falha ao decodificar a imagem.');
-      }
-
-      // Converte a imagem para PNG
-      Uint8List pngBytes = Uint8List.fromList(img.encodePng(decodedImage));
 
       var request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
 
@@ -57,17 +49,17 @@ class UploadService {
       request.headers['Accept'] = 'application/json';
       request.headers['Authorization'] = 'Bearer $token';
 
-      print('Image png name: ${imageFile.name.split('.').first}.png');
-
       // Adiciona o arquivo na requisição
       request.files.add(
         http.MultipartFile.fromBytes(
-            'file',
-            pngBytes,
-            filename: '${imageFile.name.split('.').first}.png', // Nome com extensão PNG
-            contentType: MediaType('image', 'png'), // Define o tipo de mídia como PNG
-          ),
+          'file',
+          fileBytes,
+          filename: imageFile.name, // O nome do arquivo com extensão
+          contentType: MediaType('image', imageFile.mimeType?.split('/').last ?? 'jpeg'), // Define o tipo de mídia
+        ),
       );
+
+      print('Request files: ${request.files}');
 
       // Envia a requisição
       var response = await request.send();
@@ -75,7 +67,7 @@ class UploadService {
       if (response.statusCode == 200) {
         print('Imagem enviada com sucesso');
       } else {
-        print('Falha no envio da imagem v2: ${response.statusCode}');
+        print('Falha no envio da imagem: ${response.statusCode}');
       }
     } catch (e) {
       print('Erro ao enviar imagem: $e');
