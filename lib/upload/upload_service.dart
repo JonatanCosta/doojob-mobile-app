@@ -28,7 +28,9 @@ class UploadService {
 
   Future<void> uploadFeedImages(List<XFile> images) async {
     for (var image in images) {
+      print('Iniciando envio da imagem');
       await _uploadImage(image, feedUploadUrl);
+      print('Imagem enviada com sucesso');
     }
   }
 
@@ -73,7 +75,7 @@ class UploadService {
       if (response.statusCode == 200) {
         print('Imagem enviada com sucesso');
       } else {
-        print('Falha no envio da imagem: ${response.statusCode}');
+        print('Falha no envio da imagem v2: ${response.statusCode}');
       }
     } catch (e) {
       print('Erro ao enviar imagem: $e');
