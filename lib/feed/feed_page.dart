@@ -8,11 +8,15 @@ import 'package:do_job_app/geolocation/location.dart'; // Importa a classe Locat
 
 
 class FeedPage extends StatefulWidget {
+  final VoidCallback onCityChanged; // Adiciona o callback
+
+  FeedPage({Key? key, required this.onCityChanged}) : super(key: key);
+
   @override
-  _FeedPageState createState() => _FeedPageState();
+  FeedPageState createState() => FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> {
+class FeedPageState extends State<FeedPage> {
   final ApiService apiService = ApiService();
   List<dynamic> _models = [];
   int currentPage = 1;
@@ -45,7 +49,7 @@ class _FeedPageState extends State<FeedPage> {
     } else {
       // Se já confirmou, solicita permissão de localização
       LocationService locationService = LocationService();
-      locationService.requestLocationPermission(context);
+      await locationService.requestLocationPermission(context);
     }
   }
 
@@ -90,9 +94,9 @@ class _FeedPageState extends State<FeedPage> {
                   await prefs.setBool('isAdult', true); // Salva que o usuário é maior de idade
                   Navigator.of(context).pop();
 
-                   // Solicita permissão de localização após a confirmação da idade
+                  // Solicita permissão de localização após a confirmação da idade
                   LocationService locationService = LocationService();
-                  locationService.requestLocationPermission(context);
+                  await locationService.requestLocationPermission(context);
                 },
                 child: const Text('Concordo'),
                 style: ElevatedButton.styleFrom(
@@ -136,6 +140,21 @@ class _FeedPageState extends State<FeedPage> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> fetchFeed() async {
+    print('Entrou aqui!');
+    
+    // Limpe o estado dos dados
+    setState(() {
+      _models.clear();
+      _liked.clear();
+      currentPage = 1;
+      hasMore = true;
+    });
+
+    // Busque novos dados
+    await fetchData();
   }
 
   String _generateWhatsAppUrl(String phoneNumber) {
@@ -255,6 +274,7 @@ class _FeedPageState extends State<FeedPage> {
       body: _models.isEmpty && !isLoading
           ? _buildNoModelsFound() // Exibe a mensagem personalizada quando não há modelos
           : PageView.builder(
+              key: ValueKey(_models.length), // Use ValueKey para forçar reconstrução
               scrollDirection: Axis.vertical, // Troca para scroll vertical
               itemCount: _models.length + (hasMore ? 1 : 0), // Adiciona 1 para o loader
               onPageChanged: (index) {
@@ -268,7 +288,7 @@ class _FeedPageState extends State<FeedPage> {
               },
               itemBuilder: (context, index) {
                 if (index == _models.length) {
-                  return _buildLoader();
+                  return _buildLoader(); // Exibe o loader no final
                 }
 
                 final model = _models[index];
@@ -502,6 +522,7 @@ class _FeedPageState extends State<FeedPage> {
               onPressed: () async {
                 LocationService locationService = LocationService();
                 await locationService.showCitySelectionPopup(context);
+                widget.onCityChanged();
 
                 // Atualiza a lista de modelos após a mudança de cidade
                 setState(() {

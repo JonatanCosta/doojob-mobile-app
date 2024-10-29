@@ -148,8 +148,6 @@ class _ModelProfileScaffoldState extends State<ModelProfileScaffold> {
                 ),
                 ElevatedButton(
                     onPressed: isUploading ? null : () async {
-                      bool uploadSuccess = false;
-
                       // Define o estado como enviando
                       setState(() {
                         isUploading = true;
@@ -164,9 +162,6 @@ class _ModelProfileScaffoldState extends State<ModelProfileScaffold> {
                         }
 
                         Navigator.of(context).pop(); // Fecha o modal de preview
-
-                        // Se chegar até aqui, o upload foi bem-sucedido
-                        uploadSuccess = true;
 
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Foto Adicionada com sucesso!')));
 

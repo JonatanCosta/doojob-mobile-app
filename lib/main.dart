@@ -10,6 +10,7 @@ import 'package:do_job_app/geolocation/location.dart';
 import 'login/model/register_page_model.dart';
 import 'profile/profile.dart';
 import 'package:go_router/go_router.dart';
+import 'painel/model/preferences_page.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // Import necessário para configurar a URL
 
 
@@ -61,6 +62,9 @@ class MyApp extends StatelessWidget {
             return HomeScreen(selectedIndex: 7, paramID: girlID);
           },
         ),
+        GoRoute(path: '/preferences',
+          builder: (context, state) => const HomeScreen(selectedIndex: 8),
+        ),
       ],
       redirect: (context, state) {
         if (state.subloc == '/') {
@@ -99,25 +103,19 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoggedModel = false;
   bool _showCity = false;
   String? _userCity = 'Porto Alegre';
-
-  static final List<Widget> _widgetOptions = <Widget>[
-    FeedPage(),
-    const LikesPage(),
-    LoginPage(),
-    RegisterPage(),
-    RegisterPageModel(),
-    PainelPageModel(),
-    LoginPageModel(),
-  ];
+  final GlobalKey<FeedPageState> _feedPageKey = GlobalKey<FeedPageState>();
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.selectedIndex;
     _checkLoginStatus();
+    _fetchCity();
+  }
 
+  Future<void> _fetchCity() async {
     LocationService locationService = LocationService();
-    locationService.getSavedCity().then((city) {
+    await locationService.getSavedCity().then((city) {
       if (mounted) {
         setState(() {
           if (city != null && city.isNotEmpty) {
@@ -139,6 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
+    //_feedPageKey.currentState?.fetchFeed();
   }
 
   Future<void> _checkLoginStatus() async {
@@ -158,6 +157,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    
+
+    final List<Widget> _widgetOptions = <Widget>[
+      FeedPage(key: _feedPageKey, onCityChanged: () => _fetchCity()),
+      LikesPage(),
+      LoginPage(),
+      RegisterPage(),
+      RegisterPageModel(),
+      PainelPageModel(),
+      LoginPageModel(),
+      widget.paramID != null
+          ? ProfilePage(girlID: widget.paramID!)
+          : Center(child: Text('ID da modelo não encontrado!')),
+      PreferencesPage()
+    ];
+
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -181,6 +196,14 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Painel da Modelo'),
               onTap: () {
                 context.go('/painel');
+              },
+            ),
+            if (isLoggedModel)
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Configurações'),
+              onTap: () {
+                context.go('/preferences');
               },
             ),
             if (!isLoggedModel)
@@ -322,10 +345,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   backgroundColor: const Color(0xFFFF5252), // Cor de fundo (#ff5252)
                                   foregroundColor: Colors.white, // Cor do texto (branco)
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.of(context).pop(); // Fecha o popup
                                   LocationService locationService = LocationService();
-                                  locationService.showCitySelectionPopup(context);
+                                  await locationService.showCitySelectionPopup(context);
+                                  await _fetchCity();
+                                  print('Chama o fetchFeed');
+                                  await _feedPageKey.currentState?.fetchFeed();
                                 },
                                 child: const Text(
                                   'Alterar Cidade',

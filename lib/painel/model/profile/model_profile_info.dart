@@ -1,7 +1,9 @@
+import 'package:do_job_app/likes/like_service.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'media_gallery.dart';
+import 'package:go_router/go_router.dart';
 
 class ModelProfileInfo extends StatelessWidget {
   final Map<String, dynamic> girlData;
@@ -61,12 +63,12 @@ class ModelProfileInfo extends StatelessWidget {
                     children: [
                       // Chip de Pagamento
                       _buildChip('Pagamento', model['payments']
-                          .map((paymentList) => paymentList.first)
+                          .map((payment) => payment['name'])
                           .join(', ')),
 
                       // Chip de Locais
                       _buildChip('Locais', model['locals']
-                          .map((localList) => localList.first)
+                          .map((local) => local['name'])
                           .join(', ')),
 
                       // Chip de Cidades
@@ -194,7 +196,7 @@ class ModelProfileInfo extends StatelessWidget {
           
           // Botão de "Editar Preferências"
           if (canEdit)
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           if (canEdit)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -202,17 +204,17 @@ class ModelProfileInfo extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    //Navigator.pushNamed(context, '/painel/preferences');
+                    context.go('/preferences'); 
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                    shape: RoundedRectangleBorder(
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
                   ),
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  label: Text(
+                  icon: const Icon(Icons.settings, color: Colors.white),
+                  label: const Text(
                     'Editar Preferências',
                     style: TextStyle(
                       color: Colors.white,

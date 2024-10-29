@@ -17,11 +17,13 @@ class ApiService {
 
     String? city = await locationService.getCity();
     
-    if (city!.isEmpty) {
+    if (city == null || city.isEmpty) {
       city = 'Porto Alegre';
     }
 
     final url = '$baseUrl?page=$page&&city=$city';
+
+    
     final response = await http.get(Uri.parse(url),
       headers: {
           'Content-Type': 'application/json',

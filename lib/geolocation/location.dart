@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:go_router/go_router.dart';
 
 class LocationService {
   // Solicita a permissão de localização e aguarda a resposta do navegador
@@ -10,9 +11,6 @@ class LocationService {
     bool hasCity = await hasCitySaved();
 
     if (hasCity){
-      // Se a cidade já estiver salva, não exibe mais popups
-      String? city = await getSavedCity();
-      print('Cidade já salva: $city');
       return;
     }
 
@@ -57,9 +55,11 @@ class LocationService {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      showCitySelectionPopup(context);
+                    onPressed: () async {
+                      //Navigator.of(context).pop();
+                      await showCitySelectionPopup(context);
+
+                      context.pushReplacement('/feed');
                     },
                     child: const Text('Não, selecionar cidade'),
                     style: ElevatedButton.styleFrom(
@@ -101,7 +101,7 @@ class LocationService {
     } else {
       // Permissão negada, exibe o popup para selecionar cidade
       Navigator.of(context).pop();  // Fecha o popup
-      showCitySelectionPopup(context);
+      await showCitySelectionPopup(context);
     }
   }
 
@@ -113,6 +113,8 @@ class LocationService {
 
   List<Map<String, String>> cities = [
     {'text': 'Porto Alegre', 'value': 'POA'},
+    {'text': 'São Paulo', 'value': 'SP'},
+    {'text': 'Rio de Janeiro', 'value': 'RJ'},
     // Adicione outras cidades aqui, se necessário
   ];
 

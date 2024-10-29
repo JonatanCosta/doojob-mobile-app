@@ -83,4 +83,43 @@ class PainelPageService {
     );
     return response;
   }
+
+  Future<http.Response> updateGirlCity(Map<String, String> data) async {
+    final token = await storage.read(key: 'bearer_token'); // Recupera o token armazenado
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/girl/update-city'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    return response;
+  }
+
+  Future<http.Response> updateGirlLocals(Map<String, List<dynamic>> data) async {
+    final token = await storage.read(key: 'bearer_token'); // Recupera o token armazenado
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/girl/update-locals'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    return response;
+  }
+
+  Future<http.Response> updateGirlPayments(Map<String, List<dynamic>> data) async {
+    final token = await storage.read(key: 'bearer_token'); // Recupera o token armazenado
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/girl/update-payments'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    return response;
+  }
 }

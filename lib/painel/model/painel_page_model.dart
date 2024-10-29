@@ -143,7 +143,7 @@ class _PainelPageModel extends State<PainelPageModel> {
       return StepForm(loggedUser: loggedUser!); // Exibe o formulário step-by-step se não houver dados
     }
 
-    return ModelProfileScaffold(girlData: girlData!, canEdit: true,); // Reutiliza o scaffold do perfil
+    return ModelProfileScaffold(girlData: girlData!, canEdit: true); // Reutiliza o scaffold do perfil
   }
 
   // Função para abrir o WhatsApp de suporte
