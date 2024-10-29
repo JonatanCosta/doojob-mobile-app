@@ -55,14 +55,16 @@ class UploadService {
       request.headers['Accept'] = 'application/json';
       request.headers['Authorization'] = 'Bearer $token';
 
+      print('Image png name: ${imageFile.name.split('.').first}.png');
+
       // Adiciona o arquivo na requisição
       request.files.add(
         http.MultipartFile.fromBytes(
-          'file',
-          pngBytes,
-          filename: imageFile.name, // O nome do arquivo com extensão
-          contentType: MediaType('image', imageFile.mimeType?.split('/').last ?? 'jpeg'), // Define o tipo de mídia
-        ),
+            'file',
+            pngBytes,
+            filename: '${imageFile.name.split('.').first}.png', // Nome com extensão PNG
+            contentType: MediaType('image', 'png'), // Define o tipo de mídia como PNG
+          ),
       );
 
       // Envia a requisição
