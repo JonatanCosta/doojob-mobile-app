@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; 
 import 'package:image_picker/image_picker.dart'; // Usar para trabalhar com XFile
+import 'package:image/image.dart' as img;
 
 class UploadService {
   // Definição do baseUrl dentro da classe com suporte a variáveis de ambiente
@@ -37,8 +38,16 @@ class UploadService {
       // Recupera o token do storage
       String? token = await _secureStorage.read(key: 'bearer_token');
 
-      // Lê o arquivo XFile como bytes
+      // Lê o arquivo XFile como bytes e decodifica a imagem
       Uint8List fileBytes = await imageFile.readAsBytes();
+      img.Image? decodedImage = img.decodeImage(fileBytes);
+
+      if (decodedImage == null) {
+        throw Exception('Falha ao decodificar a imagem.');
+      }
+
+      // Converte a imagem para PNG
+      Uint8List pngBytes = Uint8List.fromList(img.encodePng(decodedImage));
 
       var request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
 
@@ -50,7 +59,7 @@ class UploadService {
       request.files.add(
         http.MultipartFile.fromBytes(
           'file',
-          fileBytes,
+          pngBytes,
           filename: imageFile.name, // O nome do arquivo com extensão
           contentType: MediaType('image', imageFile.mimeType?.split('/').last ?? 'jpeg'), // Define o tipo de mídia
         ),
