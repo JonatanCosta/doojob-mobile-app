@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../upload/upload_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data'; // Para exibir a imagem em memória no web
+// import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 
 
@@ -21,7 +21,7 @@ class MediaGallery extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Título "Galeria de Imagens e Vídeos"
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.photo_library_outlined, size: 24, color: Colors.black),
@@ -32,7 +32,7 @@ class MediaGallery extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
 
         // Botão "Enviar mais fotos" se canEdit for verdadeiro e já houver mídias
         if (canEdit && medias.isNotEmpty)
@@ -52,8 +52,8 @@ class MediaGallery extends StatelessWidget {
                   ),
                 ),
                 icon: Icon(Icons.upload, color: Colors.white),
-                label: Text(
-                  'Enviar mais fotos',
+                label: const Text(
+                  'Enviar fotos',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -62,7 +62,7 @@ class MediaGallery extends StatelessWidget {
               ),
             ),
           ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
 
         // Exibir a galeria em grid se houver mídias
         medias.isNotEmpty
@@ -70,8 +70,8 @@ class MediaGallery extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0), // Padding lateral
                 child: GridView.builder(
                   shrinkWrap: true, // Ajustar a altura ao conteúdo
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3, // Exibir 3 mídias por linha
                     crossAxisSpacing: 4,
                     mainAxisSpacing: 4,
@@ -107,7 +107,7 @@ class MediaGallery extends StatelessWidget {
                       ),
                     ),
                     icon: Icon(Icons.upload, color: Colors.white),
-                    label: Text(
+                    label: const Text(
                       'Envie sua primeira foto',
                       style: TextStyle(
                         color: Colors.white,
@@ -125,7 +125,6 @@ class MediaGallery extends StatelessWidget {
   final UploadService uploadService = UploadService();
 
   void _showImagePicker(BuildContext context, String imageType) {
-    //final scaffoldContext = context; // Salva o contexto atual do Scaffold
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -133,15 +132,13 @@ class MediaGallery extends StatelessWidget {
           child: Wrap(
             children: [
               ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text('Selecionar da Galeria'),
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Selecionar da Galeria'),
                 onTap: () async {
-                  //Navigator.of(context).pop();
-                  //final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                  List<XFile>? images = await _picker.pickMultiImage(); // Permite selecionar múltiplas imagens
+                  List<XFile>? images = await _picker.pickMultiImage(); 
 
-                  if (images != null && images.isNotEmpty) {
-                    _showImagePreview(context, images); // Exibe o preview das imagens selecionadas
+                  if (images.isNotEmpty) {
+                    _showImagePreview(context, images);
                   }
                 },
               ),
@@ -154,8 +151,9 @@ class MediaGallery extends StatelessWidget {
 
 
 
-  void _showImagePreview(BuildContext context, List<XFile> images) async {
+void _showImagePreview(BuildContext context, List<XFile> images) async {
   bool isUploading = false; // Variável para controlar o estado de envio
+  double progress = 0.0;
 
   showDialog(
     context: context,
@@ -164,9 +162,30 @@ class MediaGallery extends StatelessWidget {
         builder: (context, setState) {
           return AlertDialog(
             title: Text('Confirmação:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            content: Text(
-              'Você está enviando ${images.length} fotos. Essas fotos serão analisadas por nossa equipe em um prazo de até 2h.',
-              style: TextStyle(fontSize: 16),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isUploading) // Exibe o texto inicial apenas se não estiver enviando
+                  Text(
+                    'Você está enviando ${images.length} fotos. Essas fotos serão analisadas por nossa equipe em um prazo de até 2h.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                if (isUploading) // Exibe o texto "Aguarde..." durante o upload
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      'Aguarde o fim do envio, não feche essa página.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                if (isUploading)
+                  LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Colors.grey[300],
+                    color: Color(0xFFFF5252),
+                  ),
+              ]
             ),
             actions: [
               ElevatedButton(
@@ -174,16 +193,21 @@ class MediaGallery extends StatelessWidget {
                   // Define o estado como enviando
                   setState(() {
                     isUploading = true;
+                    progress = 0.0;
                   });
 
-                  // Chama o método para enviar as imagens
-                  await uploadService.uploadFeedImages(images);
+                  for (int i = 0; i < images.length; i++) {
+                    await uploadService.uploadFeedImage(images[i]);
 
-                  // Fecha o modal e redireciona para o painel após o envio
+                    setState(() {
+                      progress = (i + 1) / images.length;
+                    });
+                  }
+
                   Navigator.of(dialogContext).pop();
 
                   Navigator.of(context).pop();
-                  //Navigator.pushNamed(context, '/painel');
+
                   context.pushReplacement('/painel');
                 },
                 style: ElevatedButton.styleFrom(

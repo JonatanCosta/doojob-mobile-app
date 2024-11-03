@@ -25,35 +25,35 @@ class ModelProfileInfo extends StatelessWidget {
             padding: EdgeInsets.all(16),
             child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Perfil:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Wrap(
-                  spacing: 8.0, // Espaçamento horizontal entre as pílulas
-                  runSpacing: 4.0, // Espaçamento vertical entre as linhas
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildChip('Idade', '${model['age']} anos'),
-                    _buildChip('Altura', '${model['height']} cm'),
-                    _buildChip('Peso', '${model['weight']} kg'),
-                    _buildChip('Cabelo', model['hair']),
-                    _buildChip('Olhos', model['eyes']),
-                    _buildChip('Cintura', '${model['waist']} cm'),
-                    _buildChip('Quadril', '${model['hip']} cm'),
-                    _buildChip('Pés', '${model['feet']}'),
-                  ],
-                ),
-                SizedBox(height: 16),
-                // Seção "O que eu faço"
-                Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Wrap(
-                  spacing: 8.0, // Espaçamento horizontal entre as pílulas
-                  runSpacing: 4.0, // Espaçamento vertical entre as linhas
-                  children: model['services'].map<Widget>((service) {
-                    final serviceKey = service.keys.first; // A chave do serviço (ex: 'Oral')
-                    final serviceValue = service.values.first; // O valor do serviço (ex: 'Sim')
-                    return _buildChip(serviceKey, serviceValue);
-                  }).toList(),
-                ),
+                    Text('Perfil:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Wrap(
+                    spacing: 8.0, // Espaçamento horizontal entre as pílulas
+                    runSpacing: 4.0, // Espaçamento vertical entre as linhas
+                    children: [
+                      _buildChip('Idade', '${model['age']} anos'),
+                      _buildChip('Altura', '${model['height']} cm'),
+                      _buildChip('Peso', '${model['weight']} kg'),
+                      _buildChip('Cabelo', model['hair']),
+                      _buildChip('Olhos', model['eyes']),
+                      _buildChip('Cintura', '${model['waist']} cm'),
+                      _buildChip('Quadril', '${model['hip']} cm'),
+                      _buildChip('Pés', '${model['feet']}'),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  // Seção "O que eu faço"
+                  Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Wrap(
+                    spacing: 8.0, // Espaçamento horizontal entre as pílulas
+                    runSpacing: 4.0, // Espaçamento vertical entre as linhas
+                    children: model['services'].map<Widget>((service) {
+                      final serviceName = service['name']; // Nome do serviço
+                      final serviceStatus = service['status']; // Status do serviço
+                      return _buildChip(serviceName, serviceStatus);
+                    }).toList(),
+                  ),
                   const SizedBox(height: 16),
                   // Seção "Atendimento"
                   const Text('Atendimento:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

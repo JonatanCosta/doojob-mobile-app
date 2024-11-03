@@ -1,9 +1,10 @@
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; 
 import 'package:image_picker/image_picker.dart'; // Usar para trabalhar com XFile
-import 'package:image/image.dart' as img;
+//import 'package:image/image.dart' as img;
 
 class UploadService {
   // Definição do baseUrl dentro da classe com suporte a variáveis de ambiente
@@ -14,28 +15,24 @@ class UploadService {
   final String coverUploadUrl = '$baseUrl/v1/girl/upload-cover-image';
   final String feedUploadUrl = '$baseUrl/v1/girl/upload-feed-image';
 
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   // Método para fazer upload da imagem de perfil (XFile)
   Future<void> uploadProfileImage(XFile imageFile) async {
-    await _uploadImage(imageFile, profileUploadUrl);
+    await uploadImage(imageFile, profileUploadUrl);
   }
 
   // Método para fazer upload da imagem de capa (XFile)
   Future<void> uploadCoverImage(XFile imageFile) async {
-    await _uploadImage(imageFile, coverUploadUrl);
+    await uploadImage(imageFile, coverUploadUrl);
   }
 
-  Future<void> uploadFeedImages(List<XFile> images) async {
-    for (var image in images) {
-      print('Iniciando envio da imagem');
-      await _uploadImage(image, feedUploadUrl);
-      print('Imagem enviada com sucesso');
-    }
+  Future<void> uploadFeedImage(XFile imageFile) async {
+    await uploadImage(imageFile, feedUploadUrl);
   }
 
   // Método privado para fazer o upload da imagem (usado por ambos)
-  Future<void> _uploadImage(XFile imageFile, String uploadUrl) async {
+  Future<void> uploadImage(XFile imageFile, String uploadUrl) async {
     try {
       // Recupera o token do storage
       String? token = await _secureStorage.read(key: 'bearer_token');
@@ -64,14 +61,12 @@ class UploadService {
       // Envia a requisição
       var response = await request.send();
 
-      if (response.statusCode == 200) {
-        print('Imagem enviada com sucesso');
-      } else {
-        print('Falha no envio da imagem: ${response.statusCode}');
+      if (response.statusCode != 200) {
+        throw Exception('Falha no envio da imagem: ${response.statusCode}');
       }
     } catch (e) {
       print('Erro ao enviar imagem: $e');
-      throw e;
+      rethrow;
     }
   }
 }

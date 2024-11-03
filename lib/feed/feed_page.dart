@@ -220,14 +220,14 @@ class FeedPageState extends State<FeedPage> {
               // Seção "O que eu faço"
               Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               Wrap(
-                spacing: 8.0, // Espaçamento horizontal entre as pílulas
-                runSpacing: 4.0, // Espaçamento vertical entre as linhas
-                children: model['services'].map<Widget>((service) {
-                  final serviceKey = service.keys.first; // A chave do serviço (ex: 'Oral')
-                  final serviceValue = service.values.first; // O valor do serviço (ex: 'Sim')
-                  return _buildChip(serviceKey, serviceValue);
-                }).toList(),
-              ),
+                    spacing: 8.0, // Espaçamento horizontal entre as pílulas
+                    runSpacing: 4.0, // Espaçamento vertical entre as linhas
+                    children: model['services'].map<Widget>((service) {
+                      final serviceName = service['name']; // Nome do serviço
+                      final serviceStatus = service['status']; // Status do serviço
+                      return _buildChip(serviceName, serviceStatus);
+                    }).toList(),
+                  ),
                 const SizedBox(height: 16),
                 // Seção "Atendimento"
                 const Text('Atendimento:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

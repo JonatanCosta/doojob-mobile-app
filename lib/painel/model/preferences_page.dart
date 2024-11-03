@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'painel_page_service.dart'; // Certifique-se de que esse serviço está correto.
+import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 class PreferencesPage extends StatefulWidget {
   const PreferencesPage({Key? key}) : super(key: key);
@@ -74,6 +76,15 @@ class _PreferencesPageState extends State<PreferencesPage> {
                   Divider(color: Colors.grey[400]), // Linha sutil de separação
 
                   ListTile(
+                    leading: const Icon(Icons.price_change, color: Colors.black), // Ícone antes do texto
+                    title: const Text('Editar Preços'),
+                    onTap: () {
+                      __showEditPrices(context);
+                    },
+                  ),
+                  Divider(color: Colors.grey[400]),
+
+                  ListTile(
                     leading: Icon(Icons.place, color: Colors.black), // Ícone antes do texto
                     title: const Text('Editar Locais de Atendimento'),
                     onTap: () {
@@ -95,7 +106,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                     leading: Icon(Icons.build, color: Colors.black), // Ícone antes do texto
                     title: const Text('Editar Serviços'),
                     onTap: () {
-                      // Ação de editar serviços
+                      __showServicesPopup(context);
                     },
                   ),
                   Divider(color: Colors.grey[400]), // Linha sutil de separação
@@ -388,6 +399,338 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       : const Text('Salvar'),
                 ),
               ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void __showServicesPopup(BuildContext context) {
+    // Converte os serviços para uma lista de mapas com o status atualizado
+    final List<Map<String, dynamic>> services = List<Map<String, dynamic>>.from(girlData?['services'] ?? []);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Impede que o usuário feche o popup tocando fora
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Editar Serviços'),
+                backgroundColor: Colors.black,
+                actions: [
+                  Container(
+                    color: Colors.white, // Fundo branco
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black), // Ícone preto
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop(); // Fecha o popup
+                      },
+                    ),
+                  )
+                ],
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: services.map((service) {
+                    String serviceName = service['name'];
+                    String selectedValue = service['status'];
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          serviceName,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        Row(
+                          children: ["Sim", "Talvez", "Não"].map((option) {
+                            return Expanded(
+                              child: RadioListTile<String>(
+                                title: Text(option),
+                                value: option,
+                                groupValue: selectedValue,
+                                onChanged: (value) {
+                                  setState(() {
+                                    service['status'] = value!;
+                                  });
+                                },
+                                activeColor: const Color(0xFFFF5252),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const Divider(thickness: 1, color: Colors.grey), // Linha divisória
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+              bottomNavigationBar: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                      try {
+                        setState(() {
+                        isLoading = true;
+                      });
+
+                      girlData?['services'] = services;
+
+                      await PainelPageService().updateGirlServices({
+                        'services': services
+                      });
+
+                      setState(() {
+                        isLoading = false;
+                      });
+
+                      Navigator.of(dialogContext).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Serviços atualizados com sucesso',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+
+                      _fetchGirlData();
+                    } catch (e) {
+                      print('Erro ao salvar os serviços: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Erro ao salvar os serviços, tente novamente',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF5252),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.0,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Salvar Serviços'),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void __showEditPrices(BuildContext context) {
+    final NumberFormat currencyFormat = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$',
+      decimalDigits: 2,
+    );
+
+    if (girlData?['prices'] == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Dados de preços não encontrados.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    List<Map<String, dynamic>> prices = List<Map<String, dynamic>>.from(girlData!['prices']);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text('Edição de Preços'),
+                backgroundColor: Colors.black,
+                actions: [
+                  Container(
+                    color: Colors.white, // Fundo branco
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.black), // Ícone preto
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop(); // Fecha o popup
+                      },
+                    ),
+                  )
+                ],
+              ),
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'Edição de Preços:',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    ...prices.map((price) {
+                      TextEditingController priceController = TextEditingController(
+                        text: currencyFormat.format(price['price'] ?? 0),
+                      );
+
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Switch(
+                                value: price['enabled'] == 1,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    price['enabled'] = value ? 1 : 0;
+                                  });
+                                },
+                                activeColor: Colors.green,
+                                inactiveThumbColor: Colors.grey,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  price['description'],
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 150,
+                                child: TextField(
+                                  controller: priceController,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    TextInputFormatter.withFunction(
+                                      (oldValue, newValue) {
+                                        final number = double.tryParse(newValue.text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+                                        final formatted = currencyFormat.format(number / 100);
+                                        return TextEditingValue(
+                                          text: formatted,
+                                          selection: TextSelection.collapsed(offset: formatted.length),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                  readOnly: price['enabled'] == 0,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Preço',
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.green),
+                                    ),
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (value) {
+                                    String formattedValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                    double parsedValue = double.tryParse(formattedValue) ?? 0.0;
+                                    parsedValue /= 100.0; // Dividido para incluir centavos
+                                    price['price'] = parsedValue; // Atualiza o preço no objeto
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(thickness: 1, color: Colors.grey),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+              bottomNavigationBar: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            try {
+                              bool atLeastOneEnabled = prices.any((price) => price['enabled'] == 1);
+                              if (!atLeastOneEnabled) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Pelo menos um serviço deve estar habilitado.'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                isLoading = true;
+                              });
+
+                              await PainelPageService().updateGirlPrices({
+                                'prices': prices
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Preços atualizados com sucesso!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+
+                              await _fetchGirlData();
+
+                              Navigator.of(context).pop();
+                            } catch (e) {
+                              setState(() {
+                                isLoading = false;
+                              });
+                              print('Erro ao salvar os preços: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Erro ao salvar os preços, tente novamente.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLoading ? Colors.grey : const Color(0xFFFF5252),
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.0,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Salvar Alterações',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                  ),
+                ),
+              ),
             );
           },
         );

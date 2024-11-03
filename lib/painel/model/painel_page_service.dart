@@ -122,4 +122,40 @@ class PainelPageService {
     );
     return response;
   }
+
+  Future<http.Response> updateGirlServices(Map<String, List<dynamic>> data) async {
+    final token = await storage.read(key: 'bearer_token'); // Recupera o token armazenado
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/girl/update-services'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao atualizar os serviços');
+    }
+
+    return response;
+  }
+
+  Future<http.Response> updateGirlPrices(Map<String, List<dynamic>> data) async {
+    final token = await storage.read(key: 'bearer_token'); // Recupera o token armazenado
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/girl/update-prices'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao atualizar os preços');
+    }
+
+    return response;
+  }
 }
