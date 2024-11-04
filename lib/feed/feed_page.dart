@@ -216,10 +216,10 @@ class FeedPageState extends State<FeedPage> {
                   _buildChip('Pés', '${model['feet']}'),
                 ],
               ),
-              SizedBox(height: 16),
-              // Seção "O que eu faço"
-              Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Wrap(
+                SizedBox(height: 16),
+                // Seção "O que eu faço"
+                Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Wrap(
                     spacing: 8.0, // Espaçamento horizontal entre as pílulas
                     runSpacing: 4.0, // Espaçamento vertical entre as linhas
                     children: model['services'].map<Widget>((service) {

@@ -63,12 +63,12 @@ class ModelProfileInfo extends StatelessWidget {
                     children: [
                       // Chip de Pagamento
                       _buildChip('Pagamento', model['payments']
-                          .map((payment) => payment['name'])
+                          .map((paymentList) => paymentList.first)
                           .join(', ')),
 
                       // Chip de Locais
                       _buildChip('Locais', model['locals']
-                          .map((local) => local['name'])
+                          .map((localList) => localList.first)
                           .join(', ')),
 
                       // Chip de Cidades
@@ -100,11 +100,17 @@ class ModelProfileInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Descrição em itálico com fonte menor
-          Text(
-            '${girlData['description']}',
-            style: TextStyle(
-              fontSize: 16, // Fonte menor
-              fontStyle: FontStyle.italic,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0), // Padding nas bordas
+            child: Center(
+              child: Text(
+                '${girlData['description']}',
+                style: TextStyle(
+                  fontSize: 16, // Fonte menor
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center, // Centraliza o texto
+              ),
             ),
           ),
           SizedBox(height: 10),
