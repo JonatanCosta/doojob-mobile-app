@@ -3,6 +3,7 @@ import '../../../upload/upload_service.dart';
 import 'package:image_picker/image_picker.dart';
 // import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 class MediaGallery extends StatelessWidget {
@@ -83,9 +84,11 @@ class MediaGallery extends StatelessWidget {
                       onTap: () {
                         _openFullScreenGallery(context, index); // Abrir a galeria fullscreen
                       },
-                      child: Image.network(
-                        media['url'], // URL da mídia
+                      child: CachedNetworkImage(
+                        imageUrl: media['url'],
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
                       ),
                     );
                   },
@@ -301,9 +304,11 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
             },
             itemBuilder: (context, index) {
               return Center(
-                child: Image.network(
-                  widget.medias[index]['url'], // Exibe a imagem
-                  fit: BoxFit.contain, // Mantém o aspecto da imagem
+                child: CachedNetworkImage(
+                  imageUrl: widget.medias[index]['url'],
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
               );
             },

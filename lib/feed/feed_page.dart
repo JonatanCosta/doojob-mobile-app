@@ -6,6 +6,7 @@ import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de li
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:do_job_app/geolocation/location.dart'; // Importa a classe LocationService
 import 'package:go_router/go_router.dart'; 
+import 'package:cached_network_image/cached_network_image.dart';
 
 class FeedPage extends StatefulWidget {
   final VoidCallback onCityChanged; // Adiciona o callback
@@ -303,7 +304,8 @@ class FeedPageState extends State<FeedPage> {
 
     // Pré-carregar todas as imagens da modelo
     for (var media in model['medias']) {
-      precacheImage(NetworkImage(media['url']), context);
+      // precacheImage(NetworkImage(media['url']), context);
+      precacheImage(CachedNetworkImageProvider(media['url']), context);
     }
 
     return Container(
@@ -326,22 +328,14 @@ class FeedPageState extends State<FeedPage> {
                 return Stack(
                   children: [
                     const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),)), // Loader enquanto carrega a imagem
-                    Image.network(
-                      model['medias'][photoIndex]['url'],
+                    CachedNetworkImage(
+                      imageUrl: model['medias'][photoIndex]['url'],
                       fit: BoxFit.cover,
                       height: double.infinity,
                       width: double.infinity,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                : null,
-                          ),
-                        );
-                      },
-                    ),
+                      placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    )
                   ],
                 );
               } else {
