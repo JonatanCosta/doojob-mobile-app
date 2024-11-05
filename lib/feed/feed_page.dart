@@ -5,7 +5,7 @@ import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
 import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de likes
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:do_job_app/geolocation/location.dart'; // Importa a classe LocationService
-
+import 'package:go_router/go_router.dart'; 
 
 class FeedPage extends StatefulWidget {
   final VoidCallback onCityChanged; // Adiciona o callback
@@ -299,186 +299,233 @@ class FeedPageState extends State<FeedPage> {
   }
 
   Widget _buildModelCard(dynamic model, int index) {
-  PageController _photoController = PageController();
+    PageController _photoController = PageController();
 
-  // Pré-carregar todas as imagens da modelo
-  for (var media in model['medias']) {
-    precacheImage(NetworkImage(media['url']), context);
-  }
+    // Pré-carregar todas as imagens da modelo
+    for (var media in model['medias']) {
+      precacheImage(NetworkImage(media['url']), context);
+    }
 
-  return Container(
-    height: MediaQuery.of(context).size.height, // Define a altura como a altura da tela
-    // Resetar o índice atual das imagens ao mudar de modelo
-    child: Stack(
-      children: [
-        // PageView para exibir as imagens
-        Positioned.fill(
+    return Container(
+      height: MediaQuery.of(context).size.height, // Define a altura como a altura da tela
+      // Resetar o índice atual das imagens ao mudar de modelo
+      child: Stack(
+        children: [
+          Positioned.fill(
           child: PageView.builder(
             controller: _photoController,
-            itemCount: model['medias'].length,
+            itemCount: model['medias'].length + 1, // Adiciona 1 para o card extra
             onPageChanged: (int pageIndex) {
               setState(() {
                 _currentImageIndex = pageIndex;
               });
             },
             itemBuilder: (context, photoIndex) {
-              return Stack(
-                children: [
-                  Center(child: CircularProgressIndicator()), // Loader enquanto carrega a imagem
-                  Image.network(
-                    model['medias'][photoIndex]['url'],
-                    fit: BoxFit.cover,
-                    height: double.infinity, // Garante que a imagem cubra toda a área disponível
-                    width: double.infinity,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
+              if (photoIndex < model['medias'].length) {
+                // Exibe as imagens normais
+                return Stack(
+                  children: [
+                    const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),)), // Loader enquanto carrega a imagem
+                    Image.network(
+                      model['medias'][photoIndex]['url'],
+                      fit: BoxFit.cover,
+                      height: double.infinity,
+                      width: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              } else {
+                // Card de apresentação no final
+                String? coverImage = model['cover_img'];
+                String? profileImage = model['profile_img'];
+
+                if (coverImage == null || profileImage == null) {
+                  coverImage = 'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/0d64989794b1a4c9d89bff571d3d5842.jpg';
+                  profileImage = 'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/0d64989794b1a4c9d89bff571d3d5842.jpg';
+                }
+
+                return Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: NetworkImage(coverImage), // Usa a URL de cover_img
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.7), // Define opacidade
+                        BlendMode.darken,
+                      ),
+                    ),
                   ),
-                ],
-              );
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 80,
+                        backgroundImage: NetworkImage(profileImage), // Imagem do perfil centralizada
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.go('/p/${model['id']}');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF5252), // Cor do botão
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                        ),
+                        child: const Text(
+                          'Visitar Perfil',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
             },
           ),
         ),
-        // Contador de imagens no canto superior direito
-        Positioned(
-          top: 15,
-          right: 20,
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5), // Fundo preto com opacidade
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '${_currentImageIndex + 1}/${model['medias'].length}', // Contador de imagens
-              style: TextStyle(color: Colors.white, fontSize: 12),
+          // Contador de imagens no canto superior direito
+          Positioned(
+            top: 15,
+            right: 20,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5), // Fundo preto com opacidade
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_currentImageIndex + 1}/${model['medias'].length + 1}', // Contador de imagens
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              ),
             ),
           ),
-        ),
-        // Detalhes da modelo e botões
-        Positioned(
-          bottom: 20,
-          left: 20,
-          right: 20,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    '${model['name']}, ${model['age']} anos',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(2.0, 2.0),
-                          blurRadius: 4.0,
-                          color: Colors.black.withOpacity(0.5),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  // Botão de Detalhes ao lado da idade
-                  ElevatedButton(
-                    onPressed: () {
-                      _showDetailsModal(model); // Abre o modal de detalhes
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.7),
-                      foregroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+          // Detalhes da modelo e botões
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '${model['name']}, ${model['age']} anos',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(2.0, 2.0),
+                            blurRadius: 4.0,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Text('Detalhes', style: TextStyle(fontSize: 12)),
-                  ),
-                ],
-              ),
-              SizedBox(height: 5),
-              Text(
-                model['cities']
-                  .map((cityList) => cityList.first) // Pega o primeiro item de cada sublista
-                  .join(', '), // Junta os elementos com vírgulas // Achata a lista corretamente
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(2.0, 2.0),
-                      blurRadius: 4.0,
-                      color: Colors.black.withOpacity(0.5),
+                    SizedBox(width: 10),
+                    // Botão de Detalhes ao lado da idade
+                    ElevatedButton(
+                      onPressed: () {
+                        _showDetailsModal(model); // Abre o modal de detalhes
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.7),
+                        foregroundColor: Colors.black,
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text('Detalhes', style: TextStyle(fontSize: 12)),
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 10),
-              // Pílula com os botões de Like, WhatsApp e divisor
-              Center(
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 13, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white, // Fundo branco
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Botão de Like
-                      IconButton(
-                        icon: Icon(
-                          model['is_liked'] ? Icons.favorite : Icons.favorite_border,
-                          color: model['is_liked'] ? Colors.red : Colors.black,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          LikeService(context, isLoggedIn: isLoggedIn).onLikePressed(index, model['is_liked'], model['id'], (isLiked) {
-                            setState(() {
-                              model['is_liked'] = isLiked;  // Chama setState para atualizar a UI
-                            });
-                            print("Model is liked: ${model['is_liked']}");
-                          });
-                        },
-                      ),
-                      // Divisor vertical entre os botões
-                      Container(
-                        height: 28,  // Alinhado à altura dos ícones
-                        width: 1,  // Espessura do divisor
-                        color: const Color.fromARGB(255, 60, 60, 60),  // Cor do divisor
-                        margin: EdgeInsets.symmetric(horizontal: 15),  // Espaçamento
-                      ),
-                      // Botão de WhatsApp
-                      IconButton(
-                        icon: FaIcon(
-                          FontAwesomeIcons.whatsapp,
-                          color: Colors.green,
-                          size: 30,
-                        ),
-                        onPressed: () {
-                          _openWhatsApp(model['telephone']); // Abre o WhatsApp
-                        },
+                SizedBox(height: 5),
+                Text(
+                  model['cities']
+                    .map((cityList) => cityList.first) // Pega o primeiro item de cada sublista
+                    .join(', '), // Junta os elementos com vírgulas // Achata a lista corretamente
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(2.0, 2.0),
+                        blurRadius: 4.0,
+                        color: Colors.black.withOpacity(0.5),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 10),
+                // Pílula com os botões de Like, WhatsApp e divisor
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 13, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Fundo branco
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Botão de Like
+                        IconButton(
+                          icon: Icon(
+                            model['is_liked'] ? Icons.favorite : Icons.favorite_border,
+                            color: model['is_liked'] ? Colors.red : Colors.black,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            LikeService(context, isLoggedIn: isLoggedIn).onLikePressed(index, model['is_liked'], model['id'], (isLiked) {
+                              setState(() {
+                                model['is_liked'] = isLiked;  // Chama setState para atualizar a UI
+                              });
+                              print("Model is liked: ${model['is_liked']}");
+                            });
+                          },
+                        ),
+                        // Divisor vertical entre os botões
+                        Container(
+                          height: 28,  // Alinhado à altura dos ícones
+                          width: 1,  // Espessura do divisor
+                          color: const Color.fromARGB(255, 60, 60, 60),  // Cor do divisor
+                          margin: EdgeInsets.symmetric(horizontal: 15),  // Espaçamento
+                        ),
+                        // Botão de WhatsApp
+                        IconButton(
+                          icon: FaIcon(
+                            FontAwesomeIcons.whatsapp,
+                            color: Colors.green,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            _openWhatsApp(model['telephone']); // Abre o WhatsApp
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   Widget _buildLoader() {
     if (isLoading) {

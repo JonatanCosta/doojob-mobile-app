@@ -123,22 +123,87 @@ class ModelProfileInfo extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 20),
 
           // Exibição mais bonita para o total de mídias
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                '${girlData['medias'].length} mídias', // Exibe o total de mídias
-                style: TextStyle(fontSize: 18),
-              ),
-              SizedBox(width: 5),
-              Icon(
-                Icons.photo_library_outlined, // Ícone outline
-                size: 24,
-                color: Colors.black, // Cor preta
-              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   // Espaçamento entre as seções
+                  // Seção de mídias
+                  Column(
+                    children: [
+                      Icon(
+                        Icons.photo_library, // Ícone de mídia
+                        size: 24,
+                        color: Colors.black,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        '${girlData['medias'].length} mídias', // Exibe o total de mídias
+                        style: TextStyle(fontSize: 18),
+                        textAlign: TextAlign.center, // Centraliza o texto abaixo do ícone
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 40),
+                  // Seção de preços
+                  Column(
+                    children: [
+                      Icon(
+                        FontAwesomeIcons.dollarSign, // Ícone de dinheiro do FontAwesome
+                        size: 24,
+                        color: Colors.black,
+                      ),
+                      SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: () {
+                          // Exibe o popup com o detalhamento de preços
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Detalhamento de Preços'),
+                                content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: girlData['prices']
+                                      .map<Widget>((price) {
+                                        return price['enabled'] == 1
+                                            ? ListTile(
+                                                title: Text('${price['description']}'),
+                                                subtitle: Text(
+                                                  'R\$ ${price['price'].toStringAsFixed(2)}',
+                                                ),
+                                              )
+                                            : Container();
+                                      })
+                                      .toList(),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // Fecha o popup
+                                    },
+                                    child: Text('Fechar'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Text(
+                          'R\$ ${girlData['prices'].firstWhere((price) => price['enabled'] == 1, orElse: () => {'price': 0})['price'].toStringAsFixed(2)}',
+                          style: TextStyle(fontSize: 18),
+                          textAlign: TextAlign.center, // Centraliza o texto abaixo do ícone
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
             ],
           ),
           SizedBox(height: 20),
