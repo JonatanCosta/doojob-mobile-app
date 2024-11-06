@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 // import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 
 
 class MediaGallery extends StatefulWidget {
@@ -87,7 +89,7 @@ class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClie
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
                     ),
-                    itemCount: widget.medias.length,
+                    itemCount: widget.medias.length > 6 ? 6 : widget.medias.length, // Limita a exibição a no máximo 6 itens
                     itemBuilder: (context, index) {
                       final media = widget.medias[index];
                       return GestureDetector(
@@ -261,17 +263,22 @@ void _showImagePreview(BuildContext context, List<XFile> images) async {
     },
   );
 }
-  // Função para abrir a galeria fullscreen com PageView
+  // Verifique se o Navigator.push está sendo usado corretamente
   void _openFullScreenGallery(BuildContext context, int initialIndex) {
-    Navigator.push(
-      context,
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => FullScreenGallery(
           medias: widget.medias,
           initialIndex: initialIndex,
         ),
+        fullscreenDialog: true, // Adiciona uma transição de tela cheia
       ),
-    );
+    ).then((_) {
+      // Garante que não há rebuild desnecessário após o fechamento
+      if (mounted) {
+        setState(() {}); // Apenas para confirmar que o estado não está sendo modificado
+      }
+    });
   }
 }
 
@@ -306,30 +313,30 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          PageView.builder(
-            controller: _pageController,
+          PhotoViewGallery.builder(
             itemCount: widget.medias.length,
+            pageController: _pageController,
             onPageChanged: (index) {
               setState(() {
                 _currentIndex = index;
               });
             },
-            itemBuilder: (context, index) {
-              return Center(
-                child: CachedNetworkImage(
-                  imageUrl: widget.medias[index]['url'],
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                ),
+            builder: (context, index) {
+              return PhotoViewGalleryPageOptions(
+                imageProvider: NetworkImage(widget.medias[index]['url']),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
+                heroAttributes: PhotoViewHeroAttributes(tag: widget.medias[index]['url']),
               );
             },
+            scrollPhysics: const BouncingScrollPhysics(),
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
           ),
           Positioned(
             top: 40,
             left: 20,
             child: IconButton(
-              icon: Icon(Icons.close, color: Colors.white, size: 30),
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha a galeria fullscreen
               },

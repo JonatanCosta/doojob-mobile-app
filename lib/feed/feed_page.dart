@@ -8,6 +8,7 @@ import 'package:do_job_app/geolocation/location.dart'; // Importa a classe Locat
 import 'package:go_router/go_router.dart'; 
 import 'package:cached_network_image/cached_network_image.dart';
 
+
 class FeedPage extends StatefulWidget {
   final VoidCallback onCityChanged; // Adiciona o callback
 
