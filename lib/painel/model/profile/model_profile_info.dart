@@ -81,7 +81,12 @@ class ModelProfileInfo extends StatelessWidget {
                   ElevatedButton.icon(
                     icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
                     label: Text('Vamos Agendar?'),
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green, foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      )
+                    ),
                     onPressed: () {
                       //_openWhatsApp(model['telephone']); // Abre o WhatsApp
                     },
@@ -216,9 +221,9 @@ class ModelProfileInfo extends StatelessWidget {
                     onPressed: _openWhatsAppModel,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromRGBO(67, 160, 71, 1),
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      padding: EdgeInsets.symmetric(vertical: 18, horizontal: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
@@ -237,9 +242,9 @@ class ModelProfileInfo extends StatelessWidget {
                     onPressed: () => _showDetailsModal(girlData),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[900], // Fundo cinza 400
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      padding: EdgeInsets.symmetric(vertical: 19, horizontal: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                     icon: Icon(Icons.info_outline, color: Colors.white), // Ícone de detalhes

@@ -157,8 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
-
     final List<Widget> _widgetOptions = <Widget>[
       FeedPage(key: _feedPageKey, onCityChanged: () => _fetchCity()),
       LikesPage(),

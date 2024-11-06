@@ -18,109 +18,113 @@ class MediaGallery extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Título "Galeria de Imagens e Vídeos"
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.photo_library_outlined, size: 24, color: Colors.black),
-            SizedBox(width: 5),
-            Text(
-              'Galeria de Imagens e Vídeos',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-
-        // Botão "Enviar mais fotos" se canEdit for verdadeiro e já houver mídias
-        if (canEdit && medias.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  _showImagePicker(context, 'feed_img'); // Abre o modal de seleção de imagem
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8), // Bordas arredondadas
-                  ),
-                ),
-                icon: Icon(Icons.upload, color: Colors.white),
-                label: const Text(
-                  'Enviar fotos',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
+    return SingleChildScrollView( // Adicione este widget para permitir rolagem
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Título "Galeria de Imagens e Vídeos"
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.photo_library_outlined, size: 24, color: Colors.black),
+              SizedBox(width: 5),
+              Text(
+                'Galeria de Imagens e Vídeos',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            ),
+            ],
           ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-        // Exibir a galeria em grid se houver mídias
-        medias.isNotEmpty
-            ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // Padding lateral
-                child: GridView.builder(
-                  shrinkWrap: true, // Ajustar a altura ao conteúdo
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, // Exibir 3 mídias por linha
-                    crossAxisSpacing: 4,
-                    mainAxisSpacing: 4,
-                  ),
-                  itemCount: medias.length,
-                  itemBuilder: (context, index) {
-                    final media = medias[index];
-                    return GestureDetector(
-                      onTap: () {
-                        _openFullScreenGallery(context, index); // Abrir a galeria fullscreen
-                      },
-                      child: CachedNetworkImage(
-                        imageUrl: media['url'],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    );
+          // Botão "Enviar mais fotos" se canEdit for verdadeiro e já houver mídias
+          if (canEdit && medias.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _showImagePicker(context, 'feed_img'); // Abre o modal de seleção de imagem
                   },
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _showImagePicker(context, 'feed_img');          
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8), // Bordas arredondadas
-                      ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    icon: Icon(Icons.upload, color: Colors.white),
-                    label: const Text(
-                      'Envie sua primeira foto',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                  ),
+                  icon: const Icon(Icons.upload, color: Colors.white),
+                  label: const Text(
+                    'Enviar fotos',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
                     ),
                   ),
                 ),
               ),
-      ],
+            ),
+          const SizedBox(height: 10),
+
+          // Exibir a galeria em grid se houver mídias
+          medias.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: GridView.builder(
+                    shrinkWrap: true, // Permite que o GridView se ajuste ao conteúdo
+                    physics: const NeverScrollableScrollPhysics(), // Evita que o GridView role de forma independente
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // Exibir 3 mídias por linha
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                    ),
+                    itemCount: medias.length,
+                    itemBuilder: (context, index) {
+                      final media = medias[index];
+                      return GestureDetector(
+                        onTap: () {
+                          _openFullScreenGallery(context, index); // Abre a galeria fullscreen
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: media['url'],
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => CircularProgressIndicator(
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(Icons.error),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _showImagePicker(context, 'feed_img');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      icon: const Icon(Icons.upload, color: Colors.white),
+                      label: const Text(
+                        'Envie sua primeira foto',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+        ],
+      ),
     );
   }
 
@@ -286,7 +290,6 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
   }
-  
 
   @override
   Widget build(BuildContext context) {
