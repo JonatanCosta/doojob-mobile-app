@@ -22,8 +22,7 @@ class MediaGallery extends StatefulWidget {
 class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // Mantém o estado ao navegar para fora da página
-
-
+  
   @override
   Widget build(BuildContext context) {
     super.build(context); // Adicione isso para garantir que o estado seja mantido

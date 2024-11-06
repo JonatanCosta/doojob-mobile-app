@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'media_gallery.dart';
 import 'package:go_router/go_router.dart';
 
-class ModelProfileInfo extends StatelessWidget {
+class ModelProfileInfo extends StatefulWidget {
   final Map<String, dynamic> girlData;
   final bool canEdit;
 
@@ -15,6 +15,21 @@ class ModelProfileInfo extends StatelessWidget {
     required this.canEdit,
   }) : super(key: key);
 
+  @override
+  _ModelProfileInfoState createState() => _ModelProfileInfoState();
+}
+
+class _ModelProfileInfoState extends State<ModelProfileInfo> {
+  late Map<String, dynamic> girlData;
+  late bool canEdit;
+
+  @override
+  void initState() {
+    super.initState();
+    girlData = widget.girlData;
+    canEdit = widget.canEdit;
+  }
+  
   @override
   Widget build(BuildContext context) {
     void _showDetailsModal(dynamic model) {
