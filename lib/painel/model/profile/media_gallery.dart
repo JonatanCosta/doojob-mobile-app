@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 
-class MediaGallery extends StatelessWidget {
+class MediaGallery extends StatefulWidget {
   final List<dynamic> medias; // Lista de mídias
   final bool canEdit; // Verificar se o usuário pode editar
   
@@ -16,8 +16,18 @@ class MediaGallery extends StatelessWidget {
     required this.canEdit,
   }) : super(key: key);
 
+  _MediaGalleryState createState() => _MediaGalleryState();
+}
+
+class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true; // Mantém o estado ao navegar para fora da página
+
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Adicione isso para garantir que o estado seja mantido
+
     return SingleChildScrollView( // Adicione este widget para permitir rolagem
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -37,7 +47,7 @@ class MediaGallery extends StatelessWidget {
           const SizedBox(height: 10),
 
           // Botão "Enviar mais fotos" se canEdit for verdadeiro e já houver mídias
-          if (canEdit && medias.isNotEmpty)
+          if (widget.canEdit && widget.medias.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: SizedBox(
@@ -67,7 +77,7 @@ class MediaGallery extends StatelessWidget {
           const SizedBox(height: 10),
 
           // Exibir a galeria em grid se houver mídias
-          medias.isNotEmpty
+          widget.medias.isNotEmpty
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: GridView.builder(
@@ -78,9 +88,9 @@ class MediaGallery extends StatelessWidget {
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
                     ),
-                    itemCount: medias.length,
+                    itemCount: widget.medias.length,
                     itemBuilder: (context, index) {
-                      final media = medias[index];
+                      final media = widget.medias[index];
                       return GestureDetector(
                         onTap: () {
                           _openFullScreenGallery(context, index); // Abre a galeria fullscreen
@@ -258,7 +268,7 @@ void _showImagePreview(BuildContext context, List<XFile> images) async {
       context,
       MaterialPageRoute(
         builder: (context) => FullScreenGallery(
-          medias: medias,
+          medias: widget.medias,
           initialIndex: initialIndex,
         ),
       ),
