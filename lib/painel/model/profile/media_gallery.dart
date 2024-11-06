@@ -171,7 +171,8 @@ class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClie
                 },
                 builder: (context, index) {
                   return PhotoViewGalleryPageOptions(
-                    imageProvider: NetworkImage(widget.medias[index]['url']),
+                    imageProvider: CachedNetworkImageProvider(widget.medias[index]['url']),
+                    //imageProvider: NetworkImage(widget.medias[index]['url']),
                     minScale: PhotoViewComputedScale.contained,
                     maxScale: PhotoViewComputedScale.covered * 2,
                     heroAttributes: PhotoViewHeroAttributes(tag: widget.medias[index]['url']),
