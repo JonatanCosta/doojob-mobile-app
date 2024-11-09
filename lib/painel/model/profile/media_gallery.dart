@@ -109,14 +109,34 @@ class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClie
                           });
                           _showFullScreenGallery(context);
                         },
-                        child: CachedNetworkImage(
-                          imageUrl: media['url'],
-                          imageBuilder: (context, imageProvider) => Image(
-                            image: ResizeImage(imageProvider, width: 300, height: 300),
-                            fit: BoxFit.cover,
-                          ),
-                          placeholder: (context, url) => CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Icon(Icons.error),
+                        // child: CachedNetworkImage(
+                        //   imageUrl: media['url'],
+                        //   imageBuilder: (context, imageProvider) => Image(
+                        //     image: ResizeImage(imageProvider, width: 300, height: 300),
+                        //     fit: BoxFit.cover,
+                        //   ),
+                        //   placeholder: (context, url) => CircularProgressIndicator(),
+                        //   errorWidget: (context, url, error) => Icon(Icons.error),
+                        // ),
+                        child: Image.network(
+                          media['url'],
+                          width: 300,
+                          height: 300,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
                         ),
                       );
                     },
@@ -171,8 +191,8 @@ class _MediaGalleryState extends State<MediaGallery> with AutomaticKeepAliveClie
                 },
                 builder: (context, index) {
                   return PhotoViewGalleryPageOptions(
-                    imageProvider: CachedNetworkImageProvider(widget.medias[index]['url']),
-                    //imageProvider: NetworkImage(widget.medias[index]['url']),
+                    //imageProvider: CachedNetworkImageProvider(widget.medias[index]['url']),
+                    imageProvider: NetworkImage(widget.medias[index]['url']),
                     minScale: PhotoViewComputedScale.contained,
                     maxScale: PhotoViewComputedScale.covered * 2,
                     heroAttributes: PhotoViewHeroAttributes(tag: widget.medias[index]['url']),

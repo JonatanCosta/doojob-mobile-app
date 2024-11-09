@@ -305,8 +305,8 @@ class FeedPageState extends State<FeedPage> {
 
     // Pré-carregar todas as imagens da modelo
     for (var media in model['medias']) {
-      // precacheImage(NetworkImage(media['url']), context);
-      precacheImage(CachedNetworkImageProvider(media['url']), context);
+      precacheImage(NetworkImage(media['url']), context);
+      //precacheImage(CachedNetworkImageProvider(media['url']), context);
     }
 
     return Container(
@@ -328,15 +328,37 @@ class FeedPageState extends State<FeedPage> {
                 // Exibe as imagens normais
                 return Stack(
                   children: [
-                    const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),)), // Loader enquanto carrega a imagem
-                    CachedNetworkImage(
-                      imageUrl: model['medias'][photoIndex]['url'],
+                    const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
+                      ),
+                    ),
+                    Image.network(
+                      model['medias'][photoIndex]['url'],
                       fit: BoxFit.cover,
                       height: double.infinity,
                       width: double.infinity,
-                      placeholder: (context, url) => CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252))),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    )
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                : null,
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(
+                          Icons.error,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
                   ],
                 );
               } else {
