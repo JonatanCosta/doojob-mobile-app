@@ -37,10 +37,7 @@ class RegisterService {
 
       // Salva o token de forma segura
       await storage.write(key: 'bearer_token', value: token);
-
       await storage.write(key: 'is_model', value: isModel.toString());
-
-      print("Login bem sucedido");
 
       return true; // Login bem-sucedido
     } else {

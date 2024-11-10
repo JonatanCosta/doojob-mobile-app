@@ -41,21 +41,28 @@ class _LoginPageModelState extends State<LoginPageModel> {
       _isLoading = true;
     });
 
-    // Utiliza o serviço de login para autenticar o usuário
-    final success = await loginService.login(phone, password, true);
+    try {
+      // Utiliza o serviço de login para autenticar o usuário
+      final response = await loginService.login(phone, password, true);
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (success) {
-      // Login bem-sucedido, redireciona para a página principal
-      //Navigator.pushReplacementNamed(context, '/painel');
-      context.go('/painel');
-    } else {
+      final isModel = response['is_model'];
+      
+      if (isModel == 1) {
+        return context.go('/painel');
+      } else {
+        return context.go('/feed');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       // Exibe uma mensagem de erro em caso de falha no login
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Falha no login. Verifique suas credenciais.')),
+        SnackBar(content: Text('Falha no login. Verifique suas credenciais e tente novamente.')),
       );
     }
   }

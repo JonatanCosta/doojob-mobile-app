@@ -59,11 +59,15 @@ class _RegisterPage extends State<RegisterPage> {
 
   Future<void> _checkLoginStatus() async {
     final token = await loginService.getBearerToken(); // Verifica se o token existe
+    final isLoggedModel = await loginService.isLoggedModel();
 
-    if (token != null) {
-      // Se estiver logado, redireciona para o feed
-      // ignore: use_build_context_synchronously
-      context.go('/painel');
+
+    if (token != null && isLoggedModel) {
+      return context.go('/painel');
+    }
+
+    if (token != null && ! isLoggedModel) {
+      return context.go('/feed');
     }
   }
 
@@ -98,13 +102,8 @@ class _RegisterPage extends State<RegisterPage> {
     });
 
     if (success) {
-      // Login bem-sucedido, redireciona para a página principal
-      Navigator.pushReplacementNamed(context, '/feed');
+      return context.go('/feed');
     } else {
-      // Exibe uma mensagem de erro em caso de falha no login
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('Falha no login. Verifique suas credenciais.')),
-      // );
       _showTopErrorMessage(context, 'Falha no cadastro verifique seus dados.');
     }
   }

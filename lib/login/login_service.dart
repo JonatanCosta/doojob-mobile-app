@@ -10,7 +10,7 @@ class LoginService {
   final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   // Método para logar
-  Future<bool> login(String phone, String password, bool isModel) async {
+  Future<Map<String, dynamic>> login(String phone, String password, bool isModel) async {
     final url = Uri.parse('$baseUrl/v1/login'); // Ajuste para a rota correta de login da API
 
     final response = await http.post(
@@ -35,9 +35,9 @@ class LoginService {
       await storage.write(key: 'bearer_token', value: token);
       await storage.write(key: 'is_model', value: isModel.toString());
 
-      return true; // Login bem-sucedido
+      return responseData; // Login bem-sucedido
     } else {
-      return false; // Falha no login
+      throw Exception('Erro ao fazer login'); // Exceção em caso de falha no login
     }
   }
 

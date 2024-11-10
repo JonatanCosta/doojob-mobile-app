@@ -117,7 +117,33 @@ Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: Color(0xFFFF5252),
     body: likedModels.isEmpty
-        ? Center(child: CircularProgressIndicator())
+        ? Padding(
+            padding: const EdgeInsets.only(top: 30.0),
+            child: Column(
+              children: [
+                // Caixa de texto explicativa
+                Container(
+                  width: double.infinity, // Faz a caixa ocupar 100% da largura da tela
+                  margin: const EdgeInsets.only(top: 75.0, left: 0, right: 0, bottom: 10.0), // Adiciona margem no topo e laterais
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Fundo branco
+                    borderRadius: BorderRadius.circular(0.0), // Bordas arredondadas
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2), // Sombra suave
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 3), // Posição da sombra
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    'Aqui você pode ver todas as modelos que você curtiu.',
+                    style: TextStyle(fontSize: 14.0, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                )]))
         : Padding(
             padding: const EdgeInsets.only(top: 30.0),
             child: Column(

@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Text('Sair'),
                 onTap: () async {
                   await loginService.logout();
-                  return context.go('/feed');
+                  return context.pushReplacement('/feed');
                 },
               ),
           ],
