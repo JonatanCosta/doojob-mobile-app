@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:g_recaptcha_v3/g_recaptcha_v3.dart';
+
 class RegisterService {
   // Definição do baseUrl dentro da classe com suporte a variáveis de ambiente
   static String baseUrl = const String.fromEnvironment('API_URL', defaultValue: 'http://divinas.local:8000');
@@ -14,7 +16,11 @@ class RegisterService {
   Future<bool> register(String name, String telephone, String password, bool isModel) async {
     final url = Uri.parse('$baseUrl/v1/users'); // Ajuste para a rota correta de login da API
 
-    print('Entrou aqui');
+    final token = await GRecaptchaV3.execute('register');
+    
+    if (token == null) {
+      return false;
+    }
 
     final response = await http.post(
       url,
@@ -27,6 +33,7 @@ class RegisterService {
         'password': password,
         'telephone': telephone,
         'is_model': isModel,
+        'recaptcha_token': token,
       }),
     );
 

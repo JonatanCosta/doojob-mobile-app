@@ -51,6 +51,7 @@ dependencies:
   image: ^3.0.1
   intl: ^0.17.0
   cached_network_image: ^3.2.3
+  g_recaptcha_v3: ^0.0.5
 
 dev_dependencies:
   flutter_test:

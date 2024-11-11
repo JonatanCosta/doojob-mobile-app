@@ -12,11 +12,18 @@ import 'profile/profile.dart';
 import 'package:go_router/go_router.dart';
 import 'painel/model/preferences_page.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart'; // Import necessário para configurar a URL
+import 'package:flutter/foundation.dart'; // Import necessário para kIsWeb
+import 'package:g_recaptcha_v3/g_recaptcha_v3.dart';
 
-
-void main() {
+void main() async {
   setUrlStrategy(PathUrlStrategy()); // Remove o # da URL
-
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    await GRecaptchaV3.ready("6Lcv0HsqAAAAAPUO2TF-e2hjNntHnRNavuOOheF7");
+    Future.delayed(Duration(milliseconds: 100), () {
+      GRecaptchaV3.hideBadge();
+    });
+  }
   runApp(const MyApp());
 }
 

@@ -3,6 +3,8 @@ import 'package:do_job_app/login/login_service.dart'; // Importe o serviço de l
 import 'package:animated_text_kit/animated_text_kit.dart'; // Importe a biblioteca de animação
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -203,6 +205,33 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: 30),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: "Este site é protegido pelo reCAPTCHA e as "),
+                  TextSpan(
+                    text: "Política de Privacidade",
+                    style: TextStyle(color: Colors.blue),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        launch("https://policies.google.com/privacy");
+                      },
+                  ),
+                  TextSpan(text: " e "),
+                  TextSpan(
+                    text: "Termos de Serviço",
+                    style: TextStyle(color: Colors.blue),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        launch("https://policies.google.com/terms");
+                      },
+                  ),
+                  TextSpan(text: " do Google se aplicam."),
+                ],
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

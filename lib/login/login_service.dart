@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:g_recaptcha_v3/g_recaptcha_v3.dart';
 
 class LoginService {
   // Definição do baseUrl dentro da classe com suporte a variáveis de ambiente
@@ -13,6 +14,12 @@ class LoginService {
   Future<Map<String, dynamic>> login(String phone, String password, bool isModel) async {
     final url = Uri.parse('$baseUrl/v1/login'); // Ajuste para a rota correta de login da API
 
+    final token = await GRecaptchaV3.execute('register');
+    
+    if (token == null) {
+      throw Exception('Erro ao fazer login');
+    }
+    
     final response = await http.post(
       url,
       headers: {
@@ -22,7 +29,8 @@ class LoginService {
       body: jsonEncode({
         'telephone': phone,
         'password': password,
-        'is_model': isModel
+        'is_model': isModel,
+        'recaptcha_token': token,
       }),
     );
 
