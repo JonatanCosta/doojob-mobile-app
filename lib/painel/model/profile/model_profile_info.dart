@@ -77,14 +77,19 @@ class _ModelProfileInfoState extends State<ModelProfileInfo> {
                     runSpacing: 4.0,
                     children: [
                       // Chip de Pagamento
-                      _buildChip('Pagamento', model['payments']
-                          .map((paymentList) => paymentList.first)
-                          .join(', ')),
+                      _buildChip(
+                        'Pagamento',
+                        model['payments']
+                            .map((payment) => payment['name'])
+                            .join(', '),
+                      ),
 
-                      // Chip de Locais
-                      _buildChip('Locais', model['locals']
-                          .map((localList) => localList.first)
-                          .join(', ')),
+                      _buildChip(
+                        'Locais',
+                        model['locals']
+                            .map((payment) => payment['name'])
+                            .join(', '),
+                      ),
 
                       // Chip de Cidades
                       _buildChip('Cidade', model['cities']
