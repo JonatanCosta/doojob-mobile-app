@@ -448,18 +448,30 @@ class _PreferencesPageState extends State<PreferencesPage> {
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: ["Sim", "Talvez", "Não"].map((option) {
                             return Expanded(
-                              child: RadioListTile<String>(
-                                title: Text(option),
-                                value: option,
-                                groupValue: selectedValue,
-                                onChanged: (value) {
+                              child: GestureDetector(
+                                onTap: () {
                                   setState(() {
-                                    service['status'] = value!;
+                                    service['status'] = option;
                                   });
                                 },
-                                activeColor: const Color(0xFFFF5252),
+                                child: Column(
+                                  children: [
+                                    Radio<String>(
+                                      value: option,
+                                      groupValue: selectedValue,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          service['status'] = value!;
+                                        });
+                                      },
+                                      activeColor: const Color(0xFFFF5252),
+                                    ),
+                                    Text(option, textAlign: TextAlign.center),
+                                  ],
+                                ),
                               ),
                             );
                           }).toList(),
