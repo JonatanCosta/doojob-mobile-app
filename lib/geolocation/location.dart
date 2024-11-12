@@ -1,11 +1,16 @@
+import 'dart:convert';  // Para trabalhar com JSON
 import 'package:geocoding/geocoding.dart'; // Para geocodificação
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+
 
 class LocationService {
+  final String googleMapsApiKey = 'AIzaSyB1A2goojErbbGubsH6Uif2Ytbn52_10Nw'; // Substitua pela sua chave de API
+
   // Solicita a permissão de localização e aguarda a resposta do navegador
   Future<void> requestLocationPermission(BuildContext context) async {
     bool hasCity = await hasCitySaved();
@@ -41,6 +46,8 @@ class LocationService {
                     onPressed: () async {
                       // Solicita a permissão e aguarda a resposta do navegador
                       await _handleLocationPermission(context);
+
+                      context.pushReplacement('/feed');
                     },
                     child: const Text('Permitir'),
                     style: ElevatedButton.styleFrom(
@@ -95,9 +102,8 @@ class LocationService {
 
     // Espera pela ação do usuário para conceder ou negar a permissão
     if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-      // Permissão concedida, fechar o popup e obter a localização
-      Navigator.of(context).pop();  // Fecha o popup
       await getCityFromLocation(context);
+      Navigator.of(context).pop();  // Fecha o popup
     } else {
       // Permissão negada, exibe o popup para selecionar cidade
       Navigator.of(context).pop();  // Fecha o popup
@@ -181,41 +187,36 @@ class LocationService {
     }
   }
 
-  // Obtém a cidade com base na localização
   Future<void> getCityFromLocation(BuildContext context) async {
     try {
       print('Tentando obter a posição atual...');
       
-      // Obtém a posição atual do usuário
+      // Obtém a posição atual do usuário (latitude e longitude)
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
-      print('Posição obtida: ${position.latitude}, ${position.longitude}');
+      double latitude = position.latitude;
+      double longitude = position.longitude;
+      print('Posição obtida: $latitude, $longitude');
 
-      // Verifica se há conexão com a internet (opcional, mas recomendado)
+      // Verifica se há conexão com a internet
       if (!(await _checkInternetConnection())) {
         throw 'Sem conexão com a internet';
       }
 
-      // Usa o pacote geocoding para obter a cidade a partir das coordenadas (latitude e longitude)
-      print('Tentando fazer geocodificação...');
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
+      // Monta a URL para fazer a solicitação à API do Google Geocoding
+      String url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=$googleMapsApiKey';
 
-      print('Placemarks obtidos: $placemarks');
+      // Faz a requisição HTTP
+      final response = await http.get(Uri.parse(url));
 
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks.first;
+      // Verifica o status da resposta
+      if (response.statusCode == 200) {
+        // Decodifica a resposta JSON
+        final data = json.decode(response.body);
 
-        // Verifica se "locality" (cidade) está disponível
-        String city = place.locality ?? "Cidade não encontrada";
-
-        // Se a cidade não for encontrada, tenta buscar outros campos, como região administrativa ou sub-localidade
-        if (city == "Cidade não encontrada") {
-          city = place.administrativeArea ?? place.subAdministrativeArea ?? "Localidade desconhecida";
-        }
+        // Extrai a cidade a partir dos resultados da resposta
+        String city = _extractCityFromResponse(data) ?? "Cidade não encontrada";
 
         print('Cidade obtida: $city');
 
@@ -223,35 +224,29 @@ class LocationService {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userCity', city);
 
-        // Exibe a cidade detectada
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Localização detectada'),
-              content: Text('Você está acessando de $city.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Ok'),
-                ),
-              ],
-            );
-          },
-        );
+        print('Cidade setada: $city');
       } else {
-        // Caso nenhum placemark seja encontrado, exibe um erro
-        throw 'Nenhum dado de localização encontrado';
+        throw 'Falha na requisição. Status code: ${response.statusCode}';
       }
     } catch (e, stacktrace) {
-      // Em caso de erro, imprime o erro completo para depuração
       print('Erro ao obter localização: $e');
       print('Stacktrace: $stacktrace');
-
-      // Exibe mensagem de erro ao usuário
-      //Navigator.of(context).pop();  // Fecha o popup
-      await showCitySelectionPopup(context);
+      await showCitySelectionPopup(context);  // Função para tratar o erro com uma seleção manual
     }
+  }
+
+  // Extrai a cidade do JSON de resposta da API do Google Geocoding
+  String? _extractCityFromResponse(Map<String, dynamic> data) {
+    if (data['status'] == 'OK') {
+      for (var result in data['results']) {
+        for (var component in result['address_components']) {
+          if (component['types'].contains('locality')) {
+            return component['long_name'];
+          }
+        }
+      }
+    }
+    return null;
   }
 
   // Função para verificar se há conexão com a internet (opcional)
