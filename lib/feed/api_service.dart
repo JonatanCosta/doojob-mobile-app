@@ -21,7 +21,7 @@ class ApiService {
       city = 'Porto Alegre';
     }
 
-    final url = '$baseUrl?page=$page&&city=$city';
+    final url = '$baseUrl?page=$page&&city=$city&&status=approved';
 
     
     final response = await http.get(Uri.parse(url),

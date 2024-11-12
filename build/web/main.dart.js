@@ -43170,7 +43170,7 @@ s=4
 return A.p(new A.o4().xx(),$async$ri)
 case 4:l=c
 if(l==null||l.length===0)l="Porto Alegre"
-p=A.cf("https://api.doojob.com.br/v1/girls?page="+a+"&&city="+A.j(l),0,null)
+p=A.cf("https://api.doojob.com.br/v1/girls?page="+a+"&&city="+A.j(l)+"&&status=approved",0,null)
 o=t.N
 o=A.E(o,o)
 o.n(0,"Content-Type","application/json")
