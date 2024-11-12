@@ -79,7 +79,8 @@ class _LoginPageModelState extends State<LoginPageModel> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white, // Fundo branco
-      body: Padding(
+      body: SingleChildScrollView(
+        child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -235,6 +236,7 @@ class _LoginPageModelState extends State<LoginPageModel> {
           ],
         ),
       ),
+      )
     );
   }
 }

@@ -34,21 +34,21 @@ class _RegisterPageModel extends State<RegisterPageModel> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-           title: Row(
+           title: const Row(
               children: [
                 Icon(Icons.campaign, color: Color(0xFFFF5252)), // Ícone adicionado
                 SizedBox(width: 8), // Espaçamento entre o ícone e o texto
-                Text('Anuncie Gratuitamente!'),
+                Text('100% Grátis!'),
               ],
             ),
-          content: Text(
+          content: const Text(
               'Anunciar em nossa plataforma é 100% gratuito. Finalize hoje e aproveite!'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o popup
               },
-              child: Text('Entendi'),
+              child: const Text('Entendi'),
             ),
           ],
         );
@@ -136,162 +136,160 @@ class _RegisterPageModel extends State<RegisterPageModel> {
     });
   }
   
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white, // Fundo branco
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Manter o design da logo
-            Image.network(
-              'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/logo-fundo-branco.png', // Mantenha o caminho da sua logo aqui
-              height: 150,
-            ),
-            const Text(
-              'Suas informações estão seguras! Todas as informações fornecidas são criptografadas e não serão compartilhadas.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF212121), // Cor para um texto sutil
+      body: SingleChildScrollView(  // Adiciona SingleChildScrollView aqui
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 10), // Adiciona um espaçamento no topo para rolagem
+              Image.network(
+                'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/logo-fundo-branco.png', // Caminho da sua logo
+                height: 80,
               ),
-              textAlign: TextAlign.center, // Centraliza o texto
-            ),
-            const SizedBox(height: 25),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Nome ou Apelido',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              const Text(
+                'Suas informações estão seguras! Todas as informações fornecidas são criptografadas e não serão compartilhadas.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF212121),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 25),
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Nome Profissional ou Apelido',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Campo de Email com bordas arredondadas
-            TextField(
-              controller: _phoneController,
-              focusNode: _phoneFocusNode,
-              keyboardType: TextInputType.phone, // Define o teclado numérico
-              inputFormatters: [phoneMaskFormatter], // Aplica a máscara
-              decoration: InputDecoration(
-                labelText: 'Número de Telefone Celular',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _phoneController,
+                focusNode: _phoneFocusNode,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [phoneMaskFormatter],
+                decoration: InputDecoration(
+                  labelText: 'Whatsapp',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            // Campo de Senha com bordas arredondadas
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Senha',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Senha',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
                 ),
+                obscureText: true,
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(
-                labelText: 'Confirme a senha',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _confirmPasswordController,
+                decoration: InputDecoration(
+                  labelText: 'Confirme a senha',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  errorText: _passwordError,
                 ),
-                errorText: _passwordError
+                obscureText: true,
+                onChanged: (value) => _validatePasswords(),
               ),
-              obscureText: true,
-              onChanged: (value) => _validatePasswords()
-            ),
-            const SizedBox(height: 20),
-            // Botão "Entrar" ocupando 100% da tela
-            _isLoading
-                ? CircularProgressIndicator()
-                : SizedBox(
-                    width: double.infinity, // Ocupa 100% da largura
-                    child: ElevatedButton(
-                      onPressed: _handleRegister,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF5252),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0), // Borda arredondada
+              const SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _handleRegister,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF5252),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        'Cadastrar',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+                        child: const Text(
+                          'Cadastrar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-            const SizedBox(height: 40),
-            // Botão "Cadastrar-se" ocupando 100% da tela e com cor preta
-            const Text(
-              'Já possui cadastro? Clique abaixo!',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity, // Ocupa 100% da largura
-              child: TextButton(
-                onPressed: () {
-                  //Navigator.pushNamed(context, '/login');
-                  context.go('/login'); // Navega para a página de login
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF212121), // Fundo preto
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0), // Borda arredondada
-                  ),
+              const SizedBox(height: 40),
+              const Text(
+                'Já possui cadastro? Clique abaixo!',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: const Text(
-                  'Entrar',
-                  style: TextStyle(
-                    color: Colors.white, // Texto branco
-                    fontSize: 20,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () {
+                    context.go('/login');
+                  },
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF212121),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'Entrar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: "Este site é protegido pelo reCAPTCHA e as "),
-                  TextSpan(
-                    text: "Política de Privacidade",
-                    style: TextStyle(color: Colors.blue),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        launch("https://policies.google.com/privacy");
-                      },
-                  ),
-                  TextSpan(text: " e "),
-                  TextSpan(
-                    text: "Termos de Serviço",
-                    style: TextStyle(color: Colors.blue),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () {
-                        launch("https://policies.google.com/terms");
-                      },
-                  ),
-                  TextSpan(text: " do Google se aplicam."),
-                ],
+              const SizedBox(height: 30),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: "Este site é protegido pelo reCAPTCHA e as "),
+                    TextSpan(
+                      text: "Política de Privacidade",
+                      style: TextStyle(color: Colors.blue),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          launch("https://policies.google.com/privacy");
+                        },
+                    ),
+                    TextSpan(text: " e "),
+                    TextSpan(
+                      text: "Termos de Serviço",
+                      style: TextStyle(color: Colors.blue),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          launch("https://policies.google.com/terms");
+                        },
+                    ),
+                    TextSpan(text: " do Google se aplicam."),
+                  ],
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 20), // Espaçamento extra na parte inferior para evitar overflow
+            ],
+          ),
         ),
       ),
     );

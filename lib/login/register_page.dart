@@ -132,7 +132,8 @@ class _RegisterPage extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white, // Fundo branco
-      body: Padding(
+      body: SingleChildScrollView(
+        child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -140,7 +141,7 @@ class _RegisterPage extends State<RegisterPage> {
             // Manter o design da logo
             Image.network(
               'https://doojobbucket.s3.sa-east-1.amazonaws.com/logos/logo-fundo-branco.png', // Mantenha o caminho da sua logo aqui
-              height: 150,
+              height: 80,
             ),
             const Text(
               'Suas informações estão seguras! Todas as informações fornecidas são criptografadas e não serão compartilhadas.',
@@ -285,6 +286,7 @@ class _RegisterPage extends State<RegisterPage> {
             ),
           ],
         ),
+      )
       ),
     );
   }

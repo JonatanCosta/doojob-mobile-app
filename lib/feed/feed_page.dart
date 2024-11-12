@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:do_job_app/feed/api_service.dart'; // Importa o serviço de API
-import 'package:do_job_app/likes/like_service.dart'; // Importa o serviço de likes
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:do_job_app/geolocation/location.dart'; // Importa a classe LocationService
+import 'package:do_job_app/feed/api_service.dart';
+import 'package:do_job_app/likes/like_service.dart'; 
+import 'package:do_job_app/geolocation/location.dart'; 
 import 'package:go_router/go_router.dart'; 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:do_job_app/feed/services/age_confirmation_service.dart';
+import 'package:do_job_app/feed/services/whatsapp_service.dart';
+import 'package:do_job_app/feed/services/profile_service.dart';
 
 
 class FeedPage extends StatefulWidget {
@@ -20,6 +20,9 @@ class FeedPage extends StatefulWidget {
 
 class FeedPageState extends State<FeedPage> {
   final ApiService apiService = ApiService();
+  final WhatsAppService whatsAppService = WhatsAppService();
+  final ProfileService profileService = ProfileService();
+
   List<dynamic> _models = [];
   int currentPage = 1;
   bool isLoading = false;
@@ -31,91 +34,10 @@ class FeedPageState extends State<FeedPage> {
   void initState() {
     super.initState();
 
-    // Solicita a permissão de localização ao entrar na página
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAgeConfirmation();
+      AgeConfirmationService(context).checkAgeConfirmation();
+      fetchData();
     });
-
-    fetchData();
-  }
-  
-
-  // Verifica se o usuário já aceitou o aviso de conteúdo adulto
-  Future<void> _checkAgeConfirmation() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? isAdult = prefs.getBool('isAdult');
-
-    if (isAdult == null || isAdult == false) {
-      // Mostra o popup de confirmação de idade
-      _showAgeConfirmationPopup();
-    } else {
-      // Se já confirmou, solicita permissão de localização
-      LocationService locationService = LocationService();
-      await locationService.requestLocationPermission(context);
-    }
-  }
-
-  // Função que exibe o popup para confirmar a idade
-  void _showAgeConfirmationPopup() {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Impede que o popup seja fechado sem ação
-      barrierColor: Colors.black.withOpacity(0.9), // Define o fundo com opacidade
-      builder: (BuildContext context) {
-        return AlertDialog(
-          
-          title: const Text('Aviso: Conteúdo Adulto 18+'),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min, // Garante que a coluna ocupe apenas o espaço necessário
-            crossAxisAlignment: CrossAxisAlignment.start, // Alinha os textos à esquerda
-            children: [
-              Text(
-                'Entendo que o site DooJob apresenta conteúdo explícito destinado a adultos.',
-                style: TextStyle(
-                  fontSize: 18, // Tamanho maior para o primeiro texto
-                  fontWeight: FontWeight.bold, // Negrito para destacar
-                ),
-              ),
-              SizedBox(height: 15), // Espaçamento entre os dois textos
-              Text(
-                'A profissão de acompanhante é legalizada no Brasil e deve ser respeitada.',
-                style: TextStyle(
-                  fontSize: 14, // Tamanho menor para o segundo texto
-                  color: Colors.grey, // Cor mais clara para o segundo texto
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            SizedBox(
-              width: double.infinity, // Faz o botão ocupar 100% da largura
-              child: ElevatedButton(
-                onPressed: () async {
-                  // Salva a confirmação de idade e fecha o popup
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.setBool('isAdult', true); // Salva que o usuário é maior de idade
-                  Navigator.of(context).pop();
-
-                  // Solicita permissão de localização após a confirmação da idade
-                  LocationService locationService = LocationService();
-                  await locationService.requestLocationPermission(context);
-                },
-                child: const Text('Concordo'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15), // Aumenta a altura do botão
-                  backgroundColor: const Color(0xFFFF5252), // Cor de fundo (#FFFF5252)
-                  foregroundColor: Colors.white, // Texto branco
-                  textStyle: const TextStyle(fontSize: 20),
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero, // Remove bordas arredondadas
-                    )
-                  ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> fetchData() async {
@@ -159,116 +81,7 @@ class FeedPageState extends State<FeedPage> {
     await fetchData();
   }
 
-  String _generateWhatsAppUrl(String phoneNumber) {
-    final message = Uri.encodeComponent("Olá, vim do aplicativo DooJob e quero mais informações sobre você.");
-    return "https://wa.me/$phoneNumber?text=$message";
-  }
-
-  Future<void> _openWhatsApp(String phoneNumber) async {
-    final url = _generateWhatsAppUrl(phoneNumber);
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Não foi possível abrir o WhatsApp';
-    }
-  }
-
   int _currentImageIndex = 0;
-
-  // Função auxiliar para construir chips
-  Widget _buildChip(String label, String value) {
-    return Chip(
-      label: Text(
-        '$label: $value',
-        style: const TextStyle(
-          fontSize: 12, // Texto menor
-          color: Colors.white, // Texto branco
-        ),
-      ),
-      backgroundColor: Colors.black.withOpacity(0.7), // Preto com opacidade no fundo
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // Remove bordas extras
-        side: BorderSide.none, // Sem borda
-      ),
-    );
-  }
-
-  void _showDetailsModal(dynamic model) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Perfil:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Wrap(
-                spacing: 8.0, // Espaçamento horizontal entre as pílulas
-                runSpacing: 4.0, // Espaçamento vertical entre as linhas
-                children: [
-                  _buildChip('Idade', '${model['age']} anos'),
-                  _buildChip('Altura', '${model['height']} cm'),
-                  _buildChip('Peso', '${model['weight']} kg'),
-                  _buildChip('Cabelo', model['hair']),
-                  _buildChip('Olhos', model['eyes']),
-                  _buildChip('Cintura', '${model['waist']} cm'),
-                  _buildChip('Quadril', '${model['hip']} cm'),
-                  _buildChip('Pés', '${model['feet']}'),
-                ],
-              ),
-                SizedBox(height: 16),
-                // Seção "O que eu faço"
-                Text('O que eu faço:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Wrap(
-                    spacing: 8.0, // Espaçamento horizontal entre as pílulas
-                    runSpacing: 4.0, // Espaçamento vertical entre as linhas
-                    children: model['services'].map<Widget>((service) {
-                      final serviceName = service['name']; // Nome do serviço
-                      final serviceStatus = service['status']; // Status do serviço
-                      return _buildChip(serviceName, serviceStatus);
-                    }).toList(),
-                  ),
-                const SizedBox(height: 16),
-                // Seção "Atendimento"
-                const Text('Atendimento:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: [
-                    // Chip de Pagamento
-                    _buildChip('Pagamento', model['payments']
-                        .map((paymentList) => paymentList.first)
-                        .join(', ')),
-
-                    // Chip de Locais
-                    _buildChip('Locais', model['locals']
-                        .map((localList) => localList.first)
-                        .join(', ')),
-
-                    // Chip de Cidades
-                    _buildChip('Cidade', model['cities']
-                        .map((cityList) => cityList.first)
-                        .join(', ')),
-                  ],
-                ),
-                SizedBox(height: 16),
-                ElevatedButton.icon(
-                  icon: FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
-                  label: Text('Vamos Agendar?'),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                  onPressed: () {
-                    _openWhatsApp(model['telephone']); // Abre o WhatsApp
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -455,7 +268,7 @@ class FeedPageState extends State<FeedPage> {
                     // Botão de Detalhes ao lado da idade
                     ElevatedButton(
                       onPressed: () {
-                        _showDetailsModal(model); // Abre o modal de detalhes
+                        profileService.showDetailsModal(context, model); // Abre o modal de detalhes
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white.withOpacity(0.7),
@@ -523,13 +336,13 @@ class FeedPageState extends State<FeedPage> {
                         ),
                         // Botão de WhatsApp
                         IconButton(
-                          icon: FaIcon(
+                          icon: const FaIcon(
                             FontAwesomeIcons.whatsapp,
                             color: Colors.green,
                             size: 30,
                           ),
                           onPressed: () {
-                            _openWhatsApp(model['telephone']); // Abre o WhatsApp
+                            whatsAppService.openWhatsApp(model['telephone']);
                           },
                         ),
                       ],
