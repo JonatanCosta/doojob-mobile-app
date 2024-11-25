@@ -3,6 +3,7 @@ import 'package:do_job_app/login/login_page.dart';
 import 'package:do_job_app/login/model/login_page_model.dart';
 import 'package:do_job_app/login/register_page.dart';
 import 'package:do_job_app/painel/model/painel_page_model.dart';
+import 'package:do_job_app/search/search_page.dart';
 import 'package:flutter/material.dart';
 import 'feed/feed_page.dart';
 import 'login/login_service.dart';
@@ -71,6 +72,9 @@ class MyApp extends StatelessWidget {
         ),
         GoRoute(path: '/preferences',
           builder: (context, state) => const HomeScreen(selectedIndex: 8),
+        ),
+        GoRoute(path: '/search',
+          builder: (context, state) => const HomeScreen(selectedIndex: 9),
         ),
       ],
       redirect: (context, state) {
@@ -175,7 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
       widget.paramID != null
           ? ProfilePage(girlID: widget.paramID!)
           : Center(child: Text('ID da modelo não encontrado!')),
-      PreferencesPage()
+      PreferencesPage(),
+      SearchPage(),
     ];
 
     return Scaffold(
@@ -217,6 +222,14 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text('Feed'),
               onTap: () {
                 context.go('/feed');
+              },
+            ),
+            if (!isLoggedModel)
+            ListTile(
+              leading: Icon(Icons.search),
+              title: Text('Buscar'),
+              onTap: () {
+                context.go('/search');
               },
             ),
             if (!isLoggedModel)

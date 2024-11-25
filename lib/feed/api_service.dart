@@ -23,7 +23,6 @@ class ApiService {
 
     final url = '$baseUrl?page=$page&&city=$city&&status=approved';
 
-    
     final response = await http.get(Uri.parse(url),
       headers: {
           'Content-Type': 'application/json',
@@ -48,6 +47,47 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Falha ao carregar as cidades');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchSearch(Map<String, dynamic> params) async {
+    final LoginService loginService = LoginService();
+    final LocationService locationService = LocationService();
+
+    final String? token = await loginService.getBearerToken();
+
+    // Obtém a cidade do objeto ou busca a cidade padrão
+    String? city = params['city'] ?? await locationService.getCity();
+    if (city == null || city.isEmpty) {
+      city = 'Porto Alegre';
+    }
+
+    // Adiciona a cidade no mapa de parâmetros
+    params['city'] = city;
+
+    print('Parâmetros: $params');
+
+    // Constrói a query string
+    final queryString = Uri(queryParameters: params.map((key, value) => MapEntry(key, value.toString()))).query;
+
+    print('Query string: $queryString');
+
+    final url = '$baseUrl?$queryString';
+
+    // Requisição HTTP
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+    );
+
+    // Processa a resposta
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Falha ao carregar as modelos');
     }
   }
 }
