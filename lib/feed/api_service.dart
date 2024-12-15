@@ -90,4 +90,22 @@ class ApiService {
       throw Exception('Falha ao carregar as modelos');
     }
   }
+
+  Future<Map<String, dynamic>> fetchFilters() async {
+    // Requisição HTTP
+    final response = await http.get(
+      Uri.parse('$apiUrl/v1/filters'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    // Processa a resposta
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body)['filters'];
+    } else {
+      throw Exception('Falha ao carregar as modelos');
+    }
+  }
+
 }

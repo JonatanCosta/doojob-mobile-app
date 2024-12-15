@@ -6,12 +6,9 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:go_router/go_router.dart';
 import 'package:do_job_app/feed/services/whatsapp_service.dart';
+import 'package:do_job_app/search/filter_modal.dart';
 
 class SearchPage extends StatefulWidget {
-  //final VoidCallback onCityChanged;
-
-  //SearchPage({Key? key, required this.onCityChanged}) : super(key: key);
-
   @override
   _SearchPageState createState() => _SearchPageState();
 }
@@ -60,10 +57,10 @@ class _SearchPageState extends State<SearchPage> {
       backgroundColor: Colors.white, // Fundo branco
       body: Column(
         children: [
-          const SizedBox(height: 20), // Espaçamento no topo
+          //const SizedBox(height: 5), // Espaçamento no topo
           Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
@@ -90,13 +87,13 @@ class _SearchPageState extends State<SearchPage> {
                     icon: const FaIcon(
                       Icons.location_on,
                       color: Colors.black,
-                      size: 24,
+                      size: 16,
                     ),
                     label: const Text(
                       'Cidade',
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 20,
+                        fontSize: 16,
                       ),
                     ),
                     style: TextButton.styleFrom(
@@ -104,26 +101,32 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                   Container(
-                    height: 28, // Altura alinhada ao botão
+                    height: 18, // Altura alinhada ao botão
                     width: 1, // Espessura do divisor
                     color: const Color.fromARGB(255, 60, 60, 60),
                     margin: const EdgeInsets.symmetric(horizontal: 15),
                   ),
                   // Botão de Filtro (ícone e texto juntos)
                   TextButton.icon(
-                    onPressed: () {
-                      // Ação para o botão de filtro
+                    onPressed: () async {
+                      await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true, // Faz o modal ocupar a tela inteira
+                        builder: (BuildContext context) {
+                          return FilterModal(); // Chama o widget do modal
+                        },
+                      );
                     },
                     icon: const FaIcon(
                       Icons.filter_list_alt,
                       color: Colors.black,
-                      size: 24,
+                      size: 16,
                     ),
                     label: const Text(
                       'Filtrar',
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 20,
+                        fontSize: 16,
                       ),
                     ),
                     style: TextButton.styleFrom(
@@ -146,7 +149,7 @@ class _SearchPageState extends State<SearchPage> {
           ]
             
           else ... [
-            const SizedBox(height: 20),
+            const SizedBox(height: 5),
             Expanded(
                   child: ListView.builder(
                     itemCount: _models.length,
@@ -267,7 +270,7 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 // Paginador dinâmico
                 if (_paginationData['last_page'] > 0) ...[
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 2),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
@@ -292,7 +295,7 @@ class _SearchPageState extends State<SearchPage> {
                               foregroundColor: currentPage == pageIndex
                                   ? Colors.white
                                   : Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                             ),
                             child: Text('$pageIndex'),
                           ),
@@ -300,7 +303,7 @@ class _SearchPageState extends State<SearchPage> {
                       }),
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 2),
                 ],
         ],
       ]),

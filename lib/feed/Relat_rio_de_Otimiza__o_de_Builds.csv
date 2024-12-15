@@ -1,0 +1,6 @@
+Métrica,Antes,Depois,Economia
+Duração da Build,20min 14sec,4min 57sec,15min 17sec
+Build Minutes Used,6hrs 37sec (361min),1hr 44min 37sec (105min),4hrs 52min (256min)
+Custo por Pipeline,$3.61,$1.05,$2.56
+Custo Mensal (100 builds),$361,$105,$256
+Custo Anual (1200 builds),$4332,$1260,$3072
