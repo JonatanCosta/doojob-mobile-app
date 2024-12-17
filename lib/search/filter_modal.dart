@@ -94,7 +94,7 @@ class _FilterModalState extends State<FilterModal> {
                 Wrap(
                   spacing: 8.0,
                   runSpacing: 8.0,
-                  children: widget.filters['services']
+                  children: localFilters['services']
                       !.map<Widget>(
                         (service) => FilterChip(
                           label: Text(service['name']),
@@ -186,6 +186,8 @@ class _FilterModalState extends State<FilterModal> {
                   child: ElevatedButton(
                     onPressed: () {
                       // Dispara o callback com os filtros atualizados
+                      print("chamou o onpressed");
+                      print(localFilters);
                       widget.onApplyFilters(localFilters);
                       Navigator.pop(context);
                     },

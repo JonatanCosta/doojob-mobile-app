@@ -146,6 +146,8 @@ class _SearchPageState extends State<SearchPage> {
                         filters: filters,
                         onApplyFilters: (updatedFilters) {
                           setState(() {
+                            print("Teste");
+                            print(updatedFilters);
                             filters = updatedFilters;
                             currentPage = 1; // Opcional: Resetar a página atual
                             fetchData(); // Recarregar os dados com os novos filtros
