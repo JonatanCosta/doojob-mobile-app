@@ -18,9 +18,36 @@ class _SearchPageState extends State<SearchPage> {
   final ApiService apiService = ApiService();
   final WhatsAppService _whatsAppService = WhatsAppService();
 
+  Map<String, List<Map<String, dynamic>>> filters = {
+    'locals': [],
+    'services': [],
+    'payments': [],
+    'prices': [],
+  };
+
+  Future<void> fetchFilters() async {
+    try {
+      isLoading = true;
+      final response = await apiService.fetchFilters();
+      setState(() {
+        filters = {
+          'locals': List<Map<String, dynamic>>.from(response['locals']),
+          'services': List<Map<String, dynamic>>.from(response['services']),
+          'payments': List<Map<String, dynamic>>.from(response['payments']),
+          'prices': List<Map<String, dynamic>>.from(response['prices']),
+        };
+
+        isLoading = false;
+      });
+    } catch (error) {
+      isLoading = false;
+      print('Erro ao buscar os filtros: $error');
+    }
+  }
+
   List<dynamic> _models = [];
   Map<String, dynamic> _paginationData = {
-    'total':  0, // Usa 0 como padrão se o valor for nulo
+    'total': 0, // Usa 0 como padrão se o valor for nulo
     'per_page': 10,
     'current_page': 1,
     'last_page': 1,
@@ -36,7 +63,9 @@ class _SearchPageState extends State<SearchPage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchData();
+      fetchFilters().then((_) {
+        fetchData();
+      });
     });
   }
 
@@ -55,259 +84,288 @@ class _SearchPageState extends State<SearchPage> {
         ),
       ),
       backgroundColor: Colors.white, // Fundo branco
-      body: Column(
-        children: [
-          //const SizedBox(height: 5), // Espaçamento no topo
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Botão de Localização (ícone e texto juntos)
-                  TextButton.icon(
-                    onPressed: () async {
-                      // Ação para o botão de localização
-                      await _locationService.showCitySelectionPopup(context);
-                      //widget.onCityChanged();
+      body: Column(children: [
+        //const SizedBox(height: 5), // Espaçamento no topo
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Botão de Localização (ícone e texto juntos)
+                TextButton.icon(
+                  onPressed: () async {
+                    // Ação para o botão de localização
+                    await _locationService.showCitySelectionPopup(context);
+                    //widget.onCityChanged();
 
-                      fetchData();
-                    },
-                    icon: const FaIcon(
-                      Icons.location_on,
+                    fetchData();
+                  },
+                  icon: const FaIcon(
+                    Icons.location_on,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                  label: const Text(
+                    'Cidade',
+                    style: TextStyle(
                       color: Colors.black,
-                      size: 16,
-                    ),
-                    label: const Text(
-                      'Cidade',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero, // Remove padding adicional
+                      fontSize: 16,
                     ),
                   ),
-                  Container(
-                    height: 18, // Altura alinhada ao botão
-                    width: 1, // Espessura do divisor
-                    color: const Color.fromARGB(255, 60, 60, 60),
-                    margin: const EdgeInsets.symmetric(horizontal: 15),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // Remove padding adicional
                   ),
-                  // Botão de Filtro (ícone e texto juntos)
-                  TextButton.icon(
-                    onPressed: () async {
-                      await showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true, // Faz o modal ocupar a tela inteira
-                        builder: (BuildContext context) {
-                          return FilterModal(); // Chama o widget do modal
+                ),
+                Container(
+                  height: 18, // Altura alinhada ao botão
+                  width: 1, // Espessura do divisor
+                  color: const Color.fromARGB(255, 60, 60, 60),
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                ),
+                // Botão de Filtro (ícone e texto juntos)
+                TextButton.icon(
+                  onPressed: () async {
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled:
+                          true, // Faz o modal ocupar a tela inteira
+                      builder: (BuildContext context) {
+                        return FilterModal(
+                        filters: filters,
+                        onApplyFilters: (updatedFilters) {
+                          setState(() {
+                            filters = updatedFilters;
+                            currentPage = 1; // Opcional: Resetar a página atual
+                            fetchData(); // Recarregar os dados com os novos filtros
+                          });
                         },
                       );
-                    },
-                    icon: const FaIcon(
-                      Icons.filter_list_alt,
+                      },
+                    );
+                  },
+                  icon: const FaIcon(
+                    Icons.filter_list_alt,
+                    color: Colors.black,
+                    size: 16,
+                  ),
+                  label: const Text(
+                    'Filtrar',
+                    style: TextStyle(
                       color: Colors.black,
-                      size: 16,
-                    ),
-                    label: const Text(
-                      'Filtrar',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero, // Remove padding adicional
+                      fontSize: 16,
                     ),
                   ),
-                ],
-              ),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero, // Remove padding adicional
+                  ),
+                ),
+              ],
             ),
-          ), 
-          if (isLoading) ...[
-            const SizedBox(height: 40),
-            const Center(child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
-            )),
-          ],
-            
-          if (! isLoading && _models.isEmpty) ... [
-            Text('Nenhuma modelo encontrada!')
-          ]
-            
-          else ... [
-            const SizedBox(height: 5),
-            Expanded(
-                  child: ListView.builder(
-                    itemCount: _models.length,
-                    itemBuilder: (context, index) {
-                      final girl = _models[index];
-                      final mediaUrl = girl['medias'][0]['url'];
-                      final mediaList = girl['medias'];
-                      final enabledPrice = girl['prices']?.firstWhere(
-                        (price) => price['enabled'] == 1,
-                        orElse: () => null,
-                      );
+          ),
+        ),
+        if (isLoading) ...[
+          const SizedBox(height: 40),
+          const Center(
+              child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5252)),
+          )),
+        ],
 
-                      return Card(
-                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        elevation: 4,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+        if (!isLoading && _models.isEmpty) ...[
+          Text('Nenhuma modelo encontrada!')
+        ] else ...[
+          const SizedBox(height: 5),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _models.length,
+              itemBuilder: (context, index) {
+                final girl = _models[index];
+                final mediaUrl = girl['medias'][0]['url'];
+                final mediaList = girl['medias'];
+                final enabledPrice = girl['prices']?.firstWhere(
+                  (price) => price['enabled'] == 1,
+                  orElse: () => null,
+                );
+
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  elevation: 4,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(15.0)),
+                        child: Stack(
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
-                              child: Stack(
-                                children: [
-                                  Image.network(
-                                    mediaUrl,
-                                    height: 230,
-                                    width: double.infinity, // Faz a imagem ocupar 100% da largura
-                                    fit: BoxFit.cover,
-                                  ),
-                                  Positioned(
-                                    right: 10,
-                                    bottom: 10,
-                                    child: Container(
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white, // Fundo branco
-                                        shape: BoxShape.circle, // Forma redonda
-                                      ),
-                                      child: IconButton(
-                                        icon: const Icon(Icons.zoom_in, color: Colors.black, size: 30), // Ícone preto
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => GalleryScreen(
-                                                mediaList: mediaList,
-                                                initialIndex: 0, // Abre a galeria na primeira imagem
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      ),
-                                  ),
-                                ],
-                              ),
+                            Image.network(
+                              mediaUrl,
+                              height: 230,
+                              width: double
+                                  .infinity, // Faz a imagem ocupar 100% da largura
+                              fit: BoxFit.cover,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    enabledPrice != null
-                                        ? '${girl['name']} - R\$${enabledPrice['price']}'
-                                        : girl['name'],
-                                    style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    girl['cities'][0][0], // Exibe a primeira cidade
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  // Botões de like, WhatsApp e excluir
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      IconButton(
-                                        icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.green),
-                                        onPressed: () {
-                                          _whatsAppService.openWhatsApp(girl['telephone']);
-                                        },
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          context.go('/p/${girl['id']}');
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFFF5252), // Cor de fundo do botão
-                                          foregroundColor: Colors.white, // Cor do texto
-                                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24), // Padding interno
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10.0), // Bordas arredondadas
-                                          ),
-                                        ),
-                                        child: const Text(
-                                          'Visitar Perfil',
-                                          style: TextStyle(fontSize: 16.0), // Tamanho do texto
+                            Positioned(
+                              right: 10,
+                              bottom: 10,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.white, // Fundo branco
+                                  shape: BoxShape.circle, // Forma redonda
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(Icons.zoom_in,
+                                      color: Colors.black,
+                                      size: 30), // Ícone preto
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => GalleryScreen(
+                                          mediaList: mediaList,
+                                          initialIndex:
+                                              0, // Abre a galeria na primeira imagem
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
-                ),
-                // Paginador dinâmico
-                if (_paginationData['last_page'] > 0) ...[
-                  const SizedBox(height: 2),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_paginationData['last_page'], (index) {
-                        final pageIndex = index + 1; // Páginas começam em 1
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: currentPage == pageIndex
-                                ? null // Desativa o botão da página atual
-                                : () {
-                                    setState(() {
-                                      currentPage = pageIndex;
-                                    });
-                                    fetchData(); // Atualiza os dados com a nova página
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: currentPage == pageIndex
-                                  ? const Color(0xFFFF5252) // Destaca a página atual
-                                  : Colors.grey[300],
-                              foregroundColor: currentPage == pageIndex
-                                  ? Colors.white
-                                  : Colors.black,
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              enabledPrice != null
+                                  ? '${girl['name']} - R\$${enabledPrice['price']}'
+                                  : girl['name'],
+                              style: const TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            child: Text('$pageIndex'),
-                          ),
-                        );
-                      }),
-                    ),
+                            Text(
+                              girl['cities'][0][0], // Exibe a primeira cidade
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 8.0),
+                            // Botões de like, WhatsApp e excluir
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    _whatsAppService
+                                        .openWhatsApp(girl['telephone']);
+                                  },
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context.go('/p/${girl['id']}');
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(
+                                        0xFFFF5252), // Cor de fundo do botão
+                                    foregroundColor:
+                                        Colors.white, // Cor do texto
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 24), // Padding interno
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          10.0), // Bordas arredondadas
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Visitar Perfil',
+                                    style: TextStyle(
+                                        fontSize: 16.0), // Tamanho do texto
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                ],
+                );
+              },
+            ),
+          ),
+          // Paginador dinâmico
+          if (_paginationData['last_page'] > 0) ...[
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_paginationData['last_page'], (index) {
+                  final pageIndex = index + 1; // Páginas começam em 1
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: currentPage == pageIndex
+                          ? null // Desativa o botão da página atual
+                          : () {
+                              setState(() {
+                                currentPage = pageIndex;
+                              });
+                              fetchData(); // Atualiza os dados com a nova página
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: currentPage == pageIndex
+                            ? const Color(0xFFFF5252) // Destaca a página atual
+                            : Colors.grey[300],
+                        foregroundColor: currentPage == pageIndex
+                            ? Colors.white
+                            : Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0, vertical: 8.0),
+                      ),
+                      child: Text('$pageIndex'),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            const SizedBox(height: 2),
+          ],
         ],
       ]),
     );
+  }
+
+  List<String> getSelectedFilters(String key) {
+    return filters[key]!
+        .where((filter) => filter['selected'] == true)
+        .map<String>((filter) => filter['name'] as String)
+        .toList();
   }
 
   Future<void> fetchData() async {
@@ -317,10 +375,20 @@ class _SearchPageState extends State<SearchPage> {
       isLoading = true;
     });
 
+    // Extrai os filtros selecionados
+    List<String> selectedLocals = getSelectedFilters('locals');
+    List<String> selectedServices = getSelectedFilters('services');
+    List<String> selectedPayments = getSelectedFilters('payments');
+    List<String> selectedPrices = getSelectedFilters('prices');
+
     try {
       final params = {
         'page': currentPage,
         'status': 'approved',
+        if (selectedLocals.isNotEmpty) 'locals': selectedLocals.join(','),
+        if (selectedServices.isNotEmpty) 'services': selectedServices.join(','),
+        if (selectedPayments.isNotEmpty) 'payments': selectedPayments.join(','),
+        if (selectedPrices.isNotEmpty) 'prices': selectedPrices.join(','),
       };
 
       final data = await apiService.fetchSearch(params);
@@ -328,8 +396,10 @@ class _SearchPageState extends State<SearchPage> {
       if (data['data'] is List) {
         final List<dynamic> newModels = data['data'];
         setState(() {
-          _models = newModels; // Substitui o conteúdo de _models com os resultados
-          _liked = List<bool>.filled(newModels.length, false); // Atualiza os likes
+          _models =
+              newModels; // Substitui o conteúdo de _models com os resultados
+          _liked =
+              List<bool>.filled(newModels.length, false); // Atualiza os likes
           _paginationData = {
             'total': data['pagination']['total'],
             'per_page': data['pagination']['per_page'],
@@ -350,7 +420,6 @@ class _SearchPageState extends State<SearchPage> {
       });
     }
   }
-  
 }
 
 // Tela de galeria fullscreen
@@ -358,7 +427,9 @@ class GalleryScreen extends StatelessWidget {
   final List<dynamic> mediaList;
   final int initialIndex;
 
-  const GalleryScreen({Key? key, required this.mediaList, required this.initialIndex}) : super(key: key);
+  const GalleryScreen(
+      {Key? key, required this.mediaList, required this.initialIndex})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -368,7 +439,7 @@ class GalleryScreen extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.close, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context);  // Fecha a galeria
+            Navigator.pop(context); // Fecha a galeria
           },
         ),
       ),
